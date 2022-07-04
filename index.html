@@ -5,9 +5,9 @@
     <title>網路輿情編排系統</title>
     <style>
 		div {
-		    min-height: 10px;
-		    padding: 10px;
-		    margin-bottom: 10px;
+		    min-height: 5px;
+		    padding: 5px;
+		    margin-bottom: 5px;
 		    background-color: #f5f5f5;
 		    border: 1px solid #e3e3e3;
 		    -webkit-border-radius: 4px;
@@ -44,32 +44,41 @@
   <body>
 
 	<button onclick="addNo()">編號</button>
-	<button onclick="removeNo()">重新編號</button>
+	<button onclick="removeNo()">移除編號</button>
 
 	<div id="main2" style="background-color: #000000" class="drag-sort-enable">
 		<table >
 		<tbody>
 		  <tr>
-		    <td><textarea name="post" maxlength="1000" cols="20" rows="4" style="width: 600px; height: 35px;"></textarea></td>
-		    <td><button onclick="upward(this)">上移</button><button onclick="downward(this)">下移</button><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button></td>
+		    <td><textarea name="post" style="width: 600px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
 		  </tr>
 		</tbody> 
 		</table>
 		<table>
 		<tbody>
 		  <tr>
-		    <td><textarea name="post" maxlength="1000" cols="20" rows="4" style="width: 600px; height: 35px;"></textarea></td>
-		    <td><button onclick="upward(this)">上移</button><button onclick="downward(this)">下移</button><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button></td>
+		    <td><textarea name="post" style="width: 600px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
 		  </tr>
 		</tbody>
 		</table>
 		
 	</div>
-	<button onclick="addCategory()">新增主題</button><button onclick="removeCategory()">減少主題</button>
+
 	<button onclick="sortall()">整合</button><br>
-	<textarea id="finallcontent" style="width: 600px"></textarea>>
+	<textarea id="finallcontent" style="width: 600px" onchange="autogrow(this)" onkeydown="autogrow(this)" onmousedown="autogrow(this)"></textarea>>
+	<br><br><br>
 
     <script>
+    	function autogrow(text){
+    		var adjustedHeight=text.clientHeight;			            
+			adjustedHeight=Math.max(text.scrollHeight,adjustedHeight);
+			if (adjustedHeight>text.clientHeight){
+				text.style.height=adjustedHeight+'px';
+			}
+    	}
+
     	function sortall(){
     		var text = document.getElementById("finallcontent");
     		text.value = "";
@@ -80,19 +89,78 @@
 			    for (let i = 0; i < outSec.rows.length; i++) {
 			        var inSec = outSec.rows[i].cells[0].lastChild;
 			        if(inSec.tagName=="TEXTAREA" && inSec.value!=""){
-			            text.value = text.value+ inSec.value+"\n\n";
-
-			            var adjustedHeight=text.clientHeight;			            
-			            adjustedHeight=Math.max(text.scrollHeight,adjustedHeight);
-			            if (adjustedHeight>text.clientHeight){
-			            	text.style.height=adjustedHeight+'px';
-			            }         
+			            text.value = text.value+ inSec.value+"\n\n";       
 			        }
 			    }
-			}    		
+			}
+			autogrow(text);    		
     	}
 
-    	function addCategory(){
+    	function addNo(){
+			var rules = new RegExp(/[^\n].*[(].*[)]\n/);
+			allTextarea = document.getElementsByName("post");
+			for (let o = 0; o < allTextarea.length; o++) {
+			    var textslice = allTextarea[o].value.split("http");
+			    var newContent = "";
+			    if (textslice.length>2){
+			        newContent += (o+1) + "-1. ";    
+			        newContent += textslice[0]+"http";
+			    }else if(textslice.length>1){
+			        newContent += (o+1)+ ". ";
+			        newContent += textslice[0]+"http";
+			    }
+			    
+			    for (let i = 1; i < textslice.length-1; i++) {
+			        titleStart = textslice[i].search(rules);
+			        newContent += textslice[i].slice(0, titleStart) +(o+1)+ "-" + (i+1)+ ". "+ textslice[i].slice(titleStart)+"http";
+			    }
+			    if (textslice[textslice.length-1].search('\n')>-1) {
+			    	newContent += textslice[textslice.length-1].slice(0,textslice[textslice.length-1].search('\n'));
+			    }else{
+			    	newContent += textslice[textslice.length-1];
+			    }
+			    
+			    allTextarea[o].value = newContent;
+			}
+			sortall();
+    	}
+
+    	function removeNo(){
+		var rules = new RegExp(/[^\n].*[(].*[)]\n/);
+		allTextarea = document.getElementsByName("post");
+		for (let o = 0; o < allTextarea.length; o++) {
+		    var textslice = allTextarea[o].value.split("http");
+		    var newContent = "";
+
+		    for (let i = 0; i < textslice.length-1; i++) {
+		        if (/\d+-\d+[.]\s/.test(textslice[i]) == true) {
+		            noStart = textslice[i].search(/\d+-\d+[.]\s/);
+		            tStart = textslice[i].match(/\d+-\d+[.]\s/)[0].length;
+		        	newContent += textslice[i].slice(0, noStart)+ textslice[i].slice(noStart+tStart)+"http";   
+		    	}else if(/(\n\d-+)|(^\d+-+)\d+[.].+[^\n].+[(].*[)]\n/.test(textslice[i]) == true){
+		        	noStart = textslice[i].search(/\d+-\d+[.]/);
+		            tStart = textslice[i].match(/\d+-\d+[.]/)[0].length;
+		        	newContent += textslice[i].slice(0, noStart)+ textslice[i].slice(noStart+tStart)+"http"; 
+		    	}else if(/\d+[.]\s/.test(textslice[i]) == true){
+		    		noStart = textslice[i].search(/\d+[.]\s/);
+		            tStart = textslice[i].match(/\d+[.]\s/)[0].length;
+		        	newContent += textslice[i].slice(0, noStart)+ textslice[i].slice(noStart+tStart)+"http"; 
+		    	}else if(/(\n\d)|^\d+[.].*[^\n].*[(].*[)]\n/.test(textslice[i]) == true){
+		    		noStart = textslice[i].search(/\d+[.]/);
+		            tStart = textslice[i].match(/\d+[.]/)[0].length;
+		        	newContent += textslice[i].slice(0, noStart)+ textslice[i].slice(noStart+tStart)+"http"; 
+		    	}else{
+		            newContent +=textslice[i]+"http";
+		        }      
+		    }
+		    
+		    newContent += textslice[textslice.length-1];
+		    allTextarea[o].value = newContent;
+		}			  		
+    	}
+
+    	function addPost(thisbutt){	    
+
 		    //num 取得table的現有欄位數+1(從0開始計算)
 		    var thisTable = document.createElement("table");
 		    // Tr 的 .insertRow 就是在 table 欄位中新增一個 Row num 表示新增在最後一筆
@@ -100,92 +168,17 @@
 		    // Td 的.insertCell 在 Tr中新增一個 td Tr.cells.length 在Tr中 Td最後欄位新增一個Td 
 		    Td1 = Tr.insertCell(Tr.cells.length);
 		    Td2 = Tr.insertCell(Tr.cells.length);
-		    Td1.innerHTML='<textarea name="post" maxlength="1000" cols="20" rows="4" style="width: 600px; height: 35px;"></textarea>';
-		    Td2.innerHTML='<button onclick="upward(this)">上移</button><button onclick="downward(this)">下移</button><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button>';
+		    Td1.innerHTML='<textarea name="post" style="width: 600px; height: 35px;"  oninput ="autogrow(this)"></textarea>';
+		    Td2.innerHTML='<button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button>';
 		    var div = document.getElementById("main2");
-		    div.appendChild(thisTable); //appendChild
+		    div.insertBefore(thisTable,thisbutt.parentNode.parentNode.parentNode.parentNode.nextSibling); //appendChild
 		    (()=> {enableDragSort('drag-sort-enable')})();
-    	}
-    	function removeCategory(){
-		    var div = document.getElementById("main2");
-		    div.removeChild(div.lastChild);
-
-    	}
-    	function downward(thisbutt){
-    		var thisTable = thisbutt.parentNode.parentNode.parentNode;
-		    var num = thisbutt.parentNode.parentNode.rowIndex;
-		    nextRow = thisTable.rows[num+1].cells[0].lastChild.value ;
-		    thisTable.rows[num+1].cells[0].lastChild.value = thisTable.rows[num].cells[0].lastChild.value;
-		    thisTable.rows[num].cells[0].lastChild.value = nextRow;
-    	}
-    	function upward(thisbutt){
-    		var thisTable = thisbutt.parentNode.parentNode.parentNode;
-		    var num = thisbutt.parentNode.parentNode.rowIndex;
-		    nextRow = thisTable.rows[num-1].cells[0].lastChild.value ;
-		    thisTable.rows[num-1].cells[0].lastChild.value = thisTable.rows[num].cells[0].lastChild.value;
-		    thisTable.rows[num].cells[0].lastChild.value = nextRow;
-    	}
-    	function addNo(){
-			var allOut = document.querySelectorAll('table');
-			for (let o = 0; o < allOut.length; o++) {
-			    var outSec = document.getElementsByTagName("table")[o];
-			    var outNo = [].indexOf.call(allOut , outSec );
-			    for (let i = 0; i < outSec.rows.length; i++) {
-			        var inSec = outSec.rows[i].cells[0].lastChild;
-			        if(inSec.tagName=="TEXTAREA"){
-			        	if (outSec.rows.length==1) {
-			        		inSec.value = (o+1+". ")+inSec.value;
-			        	}else{
-			        		inSec.value = (o+1+"-"+(i+1)+". ")+inSec.value;
-			        	}			                        
-			        }
-			    }
-			}
-    	}
-
-    	function removeNo(){
-			var allOut = document.querySelectorAll('table');
-			for (let o = 0; o < allOut.length; o++) {
-			    var outSec = document.getElementsByTagName("table")[o];
-			    for (let i = 0; i < outSec.rows.length; i++) {
-			        var inSec = outSec.rows[i].cells[0].lastChild;
-			        if(inSec.tagName=="TEXTAREA"){
-			        	if (/^\d-\d[.]\s/.test(inSec.value) == true) {
-							inSec.value = inSec.value.slice(5,-1);    
-						}else if(/^\d-\d[.]/.test(inSec.value) == true){
-							inSec.value = inSec.value.slice(4,-1);
-						}else if(/^\d[.]\s/.test(inSec.value) == true){
-							inSec.value = inSec.value.slice(3,-1);
-						}else if(/^\d[.]/.test(inSec.value) == true){
-							inSec.value = inSec.value.slice(2,-1);
-						}
-			                    
-			        }
-			    }
-			}  		
-    	}
-
-    	function addPost(thisbutt){	    
-
-		    //num 取得table的現有欄位數+1(從0開始計算)
-		    var thisTable = thisbutt.parentNode.parentNode.parentNode;
-		    var num = thisbutt.parentNode.parentNode.rowIndex+1;
-		    // Tr 的 .insertRow 就是在 table 欄位中新增一個 Row num 表示新增在最後一筆
-		    var Tr = thisTable.insertRow(num);
-		    // Td 的.insertCell 在 Tr中新增一個 td Tr.cells.length 在Tr中 Td最後欄位新增一個Td 
-		    Td1 = Tr.insertCell(Tr.cells.length);
-		    Td2 = Tr.insertCell(Tr.cells.length);
-		    Td1.innerHTML='<textarea name="post" maxlength="1000" cols="20" rows="4" style="width: 600px; height: 35px;"></textarea>';
-		    Td2.innerHTML='<button onclick="upward(this)">上移</button><button onclick="downward(this)">下移</button><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button>';
-			    		
+    			    		
     	}
 
     	function removePost(thisbutt){
-			var thisTable = thisbutt.parentNode.parentNode.parentNode;
-		    var num = thisbutt.parentNode.parentNode.rowIndex;
-		    if (thisTable.rows.length>1) {
-		    	thisTable.deleteRow(num);
-		    }		    
+		    var div = document.getElementById("main2");
+		    div.removeChild(thisbutt.parentNode.parentNode.parentNode.parentNode);  
     	}
 
 		/* Made with love by @fitri
@@ -216,7 +209,6 @@
 		  
 		  selectedItem.classList.add('drag-sort-active');
 		  let swapItem = document.elementFromPoint(x, y) === null ? selectedItem : document.elementFromPoint(x, y);
-		  console.log(selectedItem + "  " + swapItem);
 		  if (list === swapItem.parentNode) {
 		    swapItem = swapItem !== selectedItem.nextSibling ? swapItem : swapItem.nextSibling;
 		    list.insertBefore(selectedItem, swapItem);
@@ -227,7 +219,30 @@
 		  item.target.classList.remove('drag-sort-active');
 		}
 
-		(()=> {enableDragSort('drag-sort-enable')})();	
+		(()=> {enableDragSort('drag-sort-enable')})();
+
+		var isdragReady = false ;
+		var div = document.getElementById("main2");
+
+		for (var i = 0; i < div.children.length; i++) {
+			div.children[i].rows[0].cells[1].onmouseover= dragReady;
+
+			div.children[i].rows[0].cells[1].onmouseleave= dragStop;	
+
+		}
+
+		function dragReady() {
+			isdragReady = true ;
+			for (var o = 0; o < div.children.length; o++) {
+			 	div.children[o].setAttribute('draggable', true);
+			}			    
+		}
+		function dragStop() {
+			    isdragReady = false ;
+			for (var o = 0; o < div.children.length; o++) {
+			    div.children[o].setAttribute('draggable', false);
+			}
+		}
 
 
     </script>
