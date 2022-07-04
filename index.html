@@ -50,7 +50,7 @@
 		<table >
 		<tbody>
 		  <tr>
-		    <td><textarea name="post" style="width: 600px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
 		    <td><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
 		  </tr>
 		</tbody> 
@@ -58,7 +58,7 @@
 		<table>
 		<tbody>
 		  <tr>
-		    <td><textarea name="post" style="width: 600px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
 		    <td><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
 		  </tr>
 		</tbody>
@@ -168,7 +168,7 @@
 		    // Td 的.insertCell 在 Tr中新增一個 td Tr.cells.length 在Tr中 Td最後欄位新增一個Td 
 		    Td1 = Tr.insertCell(Tr.cells.length);
 		    Td2 = Tr.insertCell(Tr.cells.length);
-		    Td1.innerHTML='<textarea name="post" style="width: 600px; height: 35px;"  oninput ="autogrow(this)"></textarea>';
+		    Td1.innerHTML='<textarea name="post" style="width: 540px; height: 35px;"  oninput ="autogrow(this)"></textarea>';
 		    Td2.innerHTML='<button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button>';
 		    var div = document.getElementById("main2");
 		    div.insertBefore(thisTable,thisbutt.parentNode.parentNode.parentNode.parentNode.nextSibling); //appendChild
