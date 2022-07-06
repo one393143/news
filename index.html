@@ -62,7 +62,7 @@
 		<tbody>
 		  <tr>
 		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)" >本節無</textarea></td>
-		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button></td>
 		  </tr>
 		</tbody> 
 		</table>
@@ -75,7 +75,7 @@
 		<tbody>
 		  <tr>
 		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
-		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button></td>
 		  </tr>
 		</tbody> 
 		</table>
@@ -83,7 +83,7 @@
 		<tbody>
 		  <tr>
 		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
-		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button></td>
 		  </tr>
 		</tbody>
 		</table>
@@ -95,7 +95,7 @@
 		<tbody>
 		  <tr>
 		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
-		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button></td>
 		  </tr>
 		</tbody> 
 		</table>
@@ -103,7 +103,7 @@
 		<tbody>
 		  <tr>
 		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
-		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button></td>
 		  </tr>
 		</tbody>
 		</table>
@@ -115,7 +115,7 @@
 		<tbody>
 		  <tr>
 		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
-		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button></td>
 		  </tr>
 		</tbody> 
 		</table>
@@ -123,7 +123,7 @@
 		<tbody>
 		  <tr>
 		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
-		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button></td>
 		  </tr>
 		</tbody>
 		</table>
@@ -138,6 +138,23 @@
     	var divArray = document.getElementsByTagName("div");
     	var day = new Date().getDate();
 
+    	function combine(thisbutt){
+    		var text = thisbutt.parentNode.parentNode.cells[0].lastChild;
+    		var combineBefore = text.value;
+			var eachone = combineBefore.split("http");
+			var bracketsleft = new RegExp(/[(].*[)]/);
+			var bracketsright = new RegExp(/[)]\n/);
+			var combineAfter = combineBefore.split("\n\n")[0].slice(0,eachone[0].search(bracketsright));
+
+			for (let index = 1; index < eachone.length-1; index++) {
+			    var start = eachone[index].search(bracketsleft);
+			    var end = eachone[index].search(bracketsright);
+			    eachone[index] = eachone[index].slice(start+1,end);
+			    combineAfter+= "、"+eachone[index];
+			}
+			combineAfter+= combineBefore.split("\n\n")[0].slice(eachone[0].search(bracketsright));
+			text.value = combineAfter;
+    	}
 
     	function autogrow(text){    		
     		var adjustedHeight=text.clientHeight;			            
@@ -249,7 +266,7 @@
 		    Td2.setAttribute('onmouseover', "dragReady(this)");
 		    Td2.setAttribute('onmouseleave', "dragStop(this)");
 		    Td1.innerHTML='<textarea name="post" style="width: 540px; height: 35px;"  oninput ="autogrow(this)"></textarea>';
-		    Td2.innerHTML='<button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button>';
+		    Td2.innerHTML='<button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button>';
 		    var div = thisbutt.parentNode.parentNode.parentNode.parentNode.parentNode;
 		    div.insertBefore(thisTable,thisbutt.parentNode.parentNode.parentNode.parentNode.nextSibling); //appendChild
 		    (()=> {enableDragSort('drag-sort-enable')})();
