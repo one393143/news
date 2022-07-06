@@ -45,13 +45,37 @@
 
 	<button onclick="addNo()">編號</button>
 	<button onclick="removeNo()">移除編號</button>
+	
+		<select id="hour">
+			<option value=10>10</option>	
+			<option value=11>11</option>
+			<option value=12>12</option>	
+			<option value=14>14</option>
+			<option value=15>15</option>	
+			<option value=16>16</option>
+			<option value=17>17</option>	
+			<option value=18>18</option>
+		</select>
+	<p>負面</p>
+	<div id="main1" style="background-color: #000000" class="drag-sort-enable">
+		<table >
+		<tbody>
+		  <tr>
+		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)" >本節無</textarea></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		  </tr>
+		</tbody> 
+		</table>
 
-	<div id="main2" style="background-color: #000000" class="drag-sort-enable">
+		
+	</div>
+	<p>市政</p>
+	<div id="main2" style="background-color: #FFFFDF" class="drag-sort-enable">
 		<table >
 		<tbody>
 		  <tr>
 		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
-		    <td><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
 		  </tr>
 		</tbody> 
 		</table>
@@ -59,19 +83,63 @@
 		<tbody>
 		  <tr>
 		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
-		    <td><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		  </tr>
+		</tbody>
+		</table>
+		
+	</div>
+	<p>重點</p>
+	<div id="main3" style="background-color: #CE0000" class="drag-sort-enable">
+		<table >
+		<tbody>
+		  <tr>
+		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		  </tr>
+		</tbody> 
+		</table>
+		<table>
+		<tbody>
+		  <tr>
+		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		  </tr>
+		</tbody>
+		</table>
+		
+	</div>
+	<p>社群</p>
+	<div id="main4" style="background-color: #2894FF" class="drag-sort-enable">
+		<table >
+		<tbody>
+		  <tr>
+		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
+		  </tr>
+		</tbody> 
+		</table>
+		<table>
+		<tbody>
+		  <tr>
+		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button></td>
 		  </tr>
 		</tbody>
 		</table>
 		
 	</div>
 
-	<button onclick="sortall()">整合</button><br>
+	<!-- <button onclick="sortall()">整合</button><br> -->
 	<textarea id="finallcontent" style="width: 600px" onchange="autogrow(this)" onkeydown="autogrow(this)" onmousedown="autogrow(this)"></textarea>>
 	<br><br><br>
 
     <script>
-    	function autogrow(text){
+    	var divArray = document.getElementsByTagName("div");
+    	var day = new Date().getDate();
+
+
+    	function autogrow(text){    		
     		var adjustedHeight=text.clientHeight;			            
 			adjustedHeight=Math.max(text.scrollHeight,adjustedHeight);
 			if (adjustedHeight>text.clientHeight){
@@ -80,47 +148,57 @@
     	}
 
     	function sortall(){
-    		var text = document.getElementById("finallcontent");
-    		text.value = "";
-			var allOut = document.querySelectorAll('table');
-			for (let o = 0; o < allOut.length; o++) {
-			    var outSec = document.getElementsByTagName("table")[o];
-			    var outNo = [].indexOf.call(allOut , outSec );
-			    for (let i = 0; i < outSec.rows.length; i++) {
-			        var inSec = outSec.rows[i].cells[0].lastChild;
-			        if(inSec.tagName=="TEXTAREA" && inSec.value!=""){
-			            text.value = text.value+ inSec.value+"\n\n";       
-			        }
-			    }
-			}
-			autogrow(text);    		
+	    	var descriptionArray = new Array(4);
+	    	descriptionArray[0] = "今(" + day + ")日"+hour.value+"時新北市政府市政新聞彙整\n\n新聞局 新聞聯繫科 敬啟\n\n-----------------------------------------------\n負面輿情，如下：\n\n";
+	    	descriptionArray[1] = "-----------------------------------------------\n市政輿情，如下：\n\n";
+	    	descriptionArray[2] = "今("+ day + ")日"+hour.value+"時新北市政府重點新聞彙整\n\n新聞局 新聞聯繫科 敬啟\n-----------------------------------------------\n\n";
+	    	descriptionArray[3] = "今("+ day + ")日"+hour.value+"時新北市政府社群新聞彙整\n\n新聞局 新聞聯繫科 敬啟\n-----------------------------------------------\n\n";
+
+    		var finalltext = document.getElementById("finallcontent");
+    		finalltext.value = ""; 
+    		for(var des in descriptionArray){
+    			finalltext.value += descriptionArray[des] ;
+    			var allthiscontent = divArray[des].getElementsByTagName("textarea");
+    			for (let con = 0; con< allthiscontent.length;con++) {
+    				finalltext.value += allthiscontent[con].value+"\n\n";
+    			}
+    		}
+
+
+	  //       if(inSec.tagName=="TEXTAREA" && inSec.value!=""){
+			//     text.value = text.value+ inSec.value+"\n\n";       
+			// }
+			autogrow(finalltext);    		
     	}
 
     	function addNo(){
 			var rules = new RegExp(/[^\n].*[(].*[)]\n/);
-			allTextarea = document.getElementsByName("post");
-			for (let o = 0; o < allTextarea.length; o++) {
-			    var textslice = allTextarea[o].value.split("http");
-			    var newContent = "";
-			    if (textslice.length>2){
-			        newContent += (o+1) + "-1. ";    
-			        newContent += textslice[0]+"http";
-			    }else if(textslice.length>1){
-			        newContent += (o+1)+ ". ";
-			        newContent += textslice[0]+"http";
-			    }
-			    
-			    for (let i = 1; i < textslice.length-1; i++) {
-			        titleStart = textslice[i].search(rules);
-			        newContent += textslice[i].slice(0, titleStart) +(o+1)+ "-" + (i+1)+ ". "+ textslice[i].slice(titleStart)+"http";
-			    }
-			    if (textslice[textslice.length-1].search('\n')>-1) {
-			    	newContent += textslice[textslice.length-1].slice(0,textslice[textslice.length-1].search('\n'));
-			    }else{
-			    	newContent += textslice[textslice.length-1];
-			    }
-			    
-			    allTextarea[o].value = newContent;
+
+			for (var d = 0; d < divArray.length; d++) {			
+				allTextarea = divArray[d].getElementsByTagName("textarea");
+				for (let o = 0; o < allTextarea.length; o++) {
+				    var textslice = allTextarea[o].value.split("http");
+				    var newContent = "";
+				    if (textslice.length>2){
+				        newContent += (o+1) + "-1. ";    
+				        newContent += textslice[0]+"http";
+				    }else if(textslice.length>1){
+				        newContent += (o+1)+ ". ";
+				        newContent += textslice[0]+"http";
+				    }
+				    
+				    for (let i = 1; i < textslice.length-1; i++) {
+				        titleStart = textslice[i].search(rules);
+				        newContent += textslice[i].slice(0, titleStart) +(o+1)+ "-" + (i+1)+ ". "+ textslice[i].slice(titleStart)+"http";
+				    }
+				    if (textslice[textslice.length-1].search('\n')>-1) {
+				    	newContent += textslice[textslice.length-1].slice(0,textslice[textslice.length-1].search('\n'));
+				    }else{
+				    	newContent += textslice[textslice.length-1];
+				    }
+				    
+				    allTextarea[o].value = newContent;
+				}
 			}
 			sortall();
     	}
@@ -168,16 +246,18 @@
 		    // Td 的.insertCell 在 Tr中新增一個 td Tr.cells.length 在Tr中 Td最後欄位新增一個Td 
 		    Td1 = Tr.insertCell(Tr.cells.length);
 		    Td2 = Tr.insertCell(Tr.cells.length);
+		    Td2.setAttribute('onmouseover', "dragReady(this)");
+		    Td2.setAttribute('onmouseleave', "dragStop(this)");
 		    Td1.innerHTML='<textarea name="post" style="width: 540px; height: 35px;"  oninput ="autogrow(this)"></textarea>';
 		    Td2.innerHTML='<button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button>';
-		    var div = document.getElementById("main2");
+		    var div = thisbutt.parentNode.parentNode.parentNode.parentNode.parentNode;
 		    div.insertBefore(thisTable,thisbutt.parentNode.parentNode.parentNode.parentNode.nextSibling); //appendChild
 		    (()=> {enableDragSort('drag-sort-enable')})();
     			    		
     	}
 
     	function removePost(thisbutt){
-		    var div = document.getElementById("main2");
+		    var div = thisbutt.parentNode.parentNode.parentNode.parentNode.parentNode;
 		    div.removeChild(thisbutt.parentNode.parentNode.parentNode.parentNode);  
     	}
 
@@ -195,7 +275,7 @@
 		}
 
 		function enableDragItem(item) {
-			item.setAttribute('draggable', true)
+			// item.setAttribute('draggable', true);
 			item.ondrag = handleDrag;
 			item.ondragend = handleDrop;
 		  
@@ -221,26 +301,17 @@
 
 		(()=> {enableDragSort('drag-sort-enable')})();
 
-		var isdragReady = false ;
-		var div = document.getElementById("main2");
 
-		for (var i = 0; i < div.children.length; i++) {
-			div.children[i].rows[0].cells[1].onmouseover= dragReady;
-
-			div.children[i].rows[0].cells[1].onmouseleave= dragStop;	
-
-		}
-
-		function dragReady() {
-			isdragReady = true ;
-			for (var o = 0; o < div.children.length; o++) {
-			 	div.children[o].setAttribute('draggable', true);
+		function dragReady(d) {
+			var dragdiv = d.parentNode.parentNode.parentNode.parentNode;
+			for (var o = 0; o < dragdiv.children.length; o++) {
+			 	dragdiv.children[o].setAttribute('draggable', true);
 			}			    
 		}
-		function dragStop() {
-			    isdragReady = false ;
-			for (var o = 0; o < div.children.length; o++) {
-			    div.children[o].setAttribute('draggable', false);
+		function dragStop(d) {
+			var dragdiv = d.parentNode.parentNode.parentNode.parentNode;
+			for (var o = 0; o < dragdiv.children.length; o++) {
+			    dragdiv.children[o].setAttribute('draggable', false);
 			}
 		}
 
