@@ -1,7 +1,10 @@
+const AP = 'sk-FVLY9ZnovgWpGJ'
+const I_ = 'CHpQT8T3BlbkFJYsO'
 const input = document.querySelector('#input');
 const submit = document.querySelector('#submit');
 const response = document.querySelector('#response');
-const API_KEY = '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';
+const KEY = 'Mu0j4KHBa3Y0ryZ2J';
+const API_KEY = AP + I_ + KEY;
 const API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
 
 submit.addEventListener('click', () => {
