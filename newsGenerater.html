@@ -30,7 +30,7 @@
       const input = document.querySelector('#input');
       const submit = document.querySelector('#submit');
       const response = document.querySelector('#response');
-      const API_KEY = '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';
+      const API_KEY = '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';
       const API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
 
       submit.addEventListener('click', () => {
@@ -48,25 +48,31 @@
 		  // Show a message indicating that the response is being generated
 		  response.value = "回答中...";
 
-		  // Make a request to the OpenAI API
-		  const apiResponse = await fetch(API_URL, {
-		    method: 'POST',
-		    headers: {
-		      'Content-Type': 'application/json',
-		      'Authorization': `Bearer ${API_KEY}`
-		    },
-		    body: JSON.stringify({
-		      prompt: query,
-		      max_tokens: 2048
-		    })
-		  });
+		  try {
+		    // Make a request to the OpenAI API
+		    const apiResponse = await fetch(API_URL, {
+		      method: 'POST',
+		      headers: {
+		        'Content-Type': 'application/json',
+		        'Authorization': `Bearer ${API_KEY}`
+		      },
+		      body: JSON.stringify({
+		        prompt: query,
+		        max_tokens: 2048
+		      })
+		    });
 
-		  // Parse the JSON response
-		  const json = await apiResponse.json();
+		    // Parse the JSON response
+		    const json = await apiResponse.json();
 
-		  // Return the response from ChatGPT
-		  return json.choices[0].text;
+		    // Return the response from ChatGPT
+		    return json.choices[0].text;
+		  } catch (error) {
+		    // Display an error message indicating that the response could not be generated
+		    response.value = "遇到錯誤：" + error;
+		  }
 		}
+
 
     </script>
   </body>
