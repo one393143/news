@@ -30,7 +30,7 @@
       const input = document.querySelector('#input');
       const submit = document.querySelector('#submit');
       const response = document.querySelector('#response');
-      const API_KEY = ${{ secrets.API_KEY }};
+      const API_KEY = process.env.API_KEY;
       const API_URL = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
 
       submit.addEventListener('click', () => {
