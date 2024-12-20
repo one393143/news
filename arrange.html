@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <title>網路輿情編排系統</title>
+    <style>
+		div {
+		    min-height: 5px;
+		    padding: 5px;
+		    margin-bottom: 5px;
+		    background-color: #f5f5f5;
+		    border: 1px solid #e3e3e3;
+		    -webkit-border-radius: 4px;
+		    -moz-border-radius: 4px;
+		    border-radius: 4px;
+		    -webkit-box-shadow: inset 0 1px 1px rgb(0 0 0 / 5%);
+		    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		    box-shadow: inset 0 1px 1px rgb(0 0 0 / 5%);
+		}
+		table {
+		    min-height: 10px;
+		    padding: 10px;
+		    margin-bottom: 10px;
+		    background-color: #f5f5f5;
+		    border: 1px solid #e3e3e3;
+		    -webkit-border-radius: 4px;
+		    -moz-border-radius: 4px;
+		    border-radius: 4px;
+		    -webkit-box-shadow: inset 0 1px 1px rgb(0 0 0 / 5%);
+		    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		    box-shadow: inset 0 1px 1px rgb(0 0 0 / 5%);
+		}
+		button{
+			text-align: center;
+			padding: 4px 14px;
+			font-size: 14px;
+			vertical-align: middle;
+    		cursor: pointer;
+		}
+
+
+    </style>
+  </head>
+  <body>
+
+	<button onclick="addNo()">編號</button>
+	<button onclick="removeNo()">移除編號</button>
+	
+		<select id="hour">
+			<option value=10>10</option>	
+			<option value=11>11</option>
+			<option value=12>12</option>	
+			<option value=14>14</option>
+			<option value=15>15</option>	
+			<option value=16>16</option>
+			<option value=17>17</option>	
+			<option value=18>18</option>
+		</select>
+
+	<p>市政</p>
+	<div id="main2" style="background-color: #ffdddd" class="drag-sort-enable">
+		<table >
+		<tbody>
+		  <tr>
+		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button></td>
+		  </tr>
+		</tbody> 
+		</table>
+		<table>
+		<tbody>
+		  <tr>
+		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button></td>
+		  </tr>
+		</tbody>
+		</table>
+		
+	</div>
+	<p>重點</p>
+	<div id="main3" style="background-color: #ffeecc" class="drag-sort-enable">
+		<table >
+		<tbody>
+		  <tr>
+		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button></td>
+		  </tr>
+		</tbody> 
+		</table>
+		<table>
+		<tbody>
+		  <tr>
+		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button></td>
+		  </tr>
+		</tbody>
+		</table>
+		
+	</div>
+	<p>社群</p>
+	<div id="main4" style="background-color: #2894FF" class="drag-sort-enable">
+		<table >
+		<tbody>
+		  <tr>
+		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button></td>
+		  </tr>
+		</tbody> 
+		</table>
+		<table>
+		<tbody>
+		  <tr>
+		    <td><textarea name="post" style="width: 540px; height: 35px;" oninput ="autogrow(this)"></textarea></td>
+		    <td onmouseover = "dragReady(this)" onmouseleave="dragStop(this)"><button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button></td>
+		  </tr>
+		</tbody>
+		</table>
+		
+	</div>
+
+	<!-- <button onclick="sortall()">整合</button><br> -->
+	<textarea id="finallcontent" style="width: 600px; height: 800px" onchange="autogrow(this)" onkeydown="autogrow(this)" onmousedown="autogrow(this)">⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⡀⠀⠀⠀⠀⠰⣷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣴⣾⠿⠿⠿⠿⠿⠿⢷⣦⣄⡀⠻⣿⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⣾⣿⡿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠻⣷⣬⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⣠⣴⡿⠋⠀⣾⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠻⠿⣶⣶⣦⣶⣶⣶⣶⣶⣶⣶⣶⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢀⣼⡿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠙⠛⠿⣿⣶⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⢀⣾⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⢿⣷⣦⡀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣾⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣀⠀⠀⣠⣴⣿⠿⠛⠿⣿⠆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⢿⣦⡀⠀⠀⠀⠀
+⠀⠀⠀⠀⣰⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣾⠿⠛⠛⠛⠿⠇⠀⠙⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣿⣆⠀⠀⠀
+⠀⠀⠀⢠⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢿⣧⠀⠀
+⠀⠀⠀⣿⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣧⠀
+⠀⠀⣸⣿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⣶⣶⣶⣶⣦⣤⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⡆
+⠀⢠⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⣿⣿⣿⣿⣿⣿⣿⣿⠇⠀⠀⠀⠀⠀⠀⠀⠘⣿⡇
+⠀⣾⣿⠀⣰⣿⣿⣦⡀⠀⢰⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠿⠿⠿⠿⠿⠟⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇
+⢠⣿⡇⢠⣿⣿⣿⣿⣿⣦⠀⢻⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⡇
+⢸⣿⠀⢸⣿⣿⣿⣿⣿⣿⣷⡀⢹⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀⠀⠀⠀⠀⢸⣿⠇
+⣿⣿⠀⢸⣿⣿⣿⣿⣿⣿⣿⣷⡀⢻⣇⠀⠀⠀⠀⠀⠀⠀⢀⣾⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⢀⣾⡟⠀
+⣿⣿⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⢿⡆⠀⠀⠀⠀⠀⠀⣾⣿⣿⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣄⣀⠀⠀⢠⣶⠿⠷⢶⣄⣤⣾⣿⠃⠀⠀⠀⢀⣾⡟⠀⠀
+⣿⣿⡆⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄⠸⣿⠀⠀⠀⠀⠀⠀⠹⣿⣿⣿⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠟⠛⢿⣷⣾⣿⣿⣦⣄⡈⣿⣿⣿⡁⠀⢀⣠⣴⣿⠏⠀⠀⠀
+⢿⣿⡇⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⣿⡇⠀⠀⠀⠀⠀⠀⠘⢿⣿⣿⣷⣤⣀⠀⠀⠀⠀⠀⢠⣿⡀⠀⠀⣿⣿⡃⠀⠈⢻⣿⡟⠋⠉⣿⣿⠿⠛⠋⠀⠀⠀⠀⠀
+⢸⣿⣷⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⢸⣷⠀⠀⠀⠀⠀⠀⠀⠀⠙⢿⣿⣿⣿⣿⣶⣾⡿⠿⢿⣿⡇⠀⠀⢹⣿⠂⠀⢀⣼⡏⠀⠀⢀⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⢻⣿⣆⠀⢻⣿⣿⣿⣿⣿⣿⣿⡇⠀⣾⣿⣿⣶⣤⣀⡀⠀⠀⠀⠀⠀⠙⠻⠟⠛⢿⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢶⠿⠿⣧⣤⣤⡾⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⢻⣿⣆⠀⠻⣿⣿⣿⣿⣿⡿⠁⢰⣿⡏⠀⠈⠉⠛⠻⣷⣦⡀⠀⠀⠀⠀⠀⠀⠈⣿⣧⣤⣤⣤⡀⠀⠀⠀⠀⠀⠀⠀⢀⣿⠟⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠹⢿⣷⣤⡀⠉⠉⠉⠉⠀⣠⣿⡿⠀⠀⠀⠀⠀⠀⠈⢻⣷⡀⠀⠀⠀⠀⠀⣴⡟⠁⠉⠛⣿⡗⠀⠀⠀⠀⢀⣀⣤⣾⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠙⠻⢿⣿⣿⣶⣾⣿⡿⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⣧⠀⠀⢀⣀⣤⣿⣧⠀⠀⣸⣿⠃⠀⠀⠀⢺⣿⠛⢻⣯⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⣾⣿⣿⣿⠿⠟⠛⠻⣿⣀⣴⣿⠏⠀⠀⠀⠀⣼⣿⠀⠈⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⢹⣿⠋⠀⠀⠀⠀⠀⣻⣿⣿⠋⠀⠀⠀⠀⢀⣿⡇⠀⢠⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⣿⠀⠸⠿⠶⠶⠾⠟⠛⠁⠀⠀⠀⠀⠀⢸⣿⠀⠀⣼⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⣿⠇⠀⠀⠀⢀⣤⣶⢿⣶⣦⡀⠀⠀⠀⢠⣿⡇⠀⢠⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⠏⠀⠀⠀⢠⣿⠋⠀⠀⠀⠹⣿⣦⠀⢀⣾⣿⢀⣤⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⡟⠀⢠⣄⣠⣿⠇⠀⠀⠀⠀⠀⣈⣿⣶⣾⣿⡿⢟⣋⣹⣿⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⣿⠇⠀⠈⠛⣿⣿⠀⠀⢀⣴⣾⠟⠛⠛⣿⣯⠀⠀⠀⠉⠉⠙⢿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⣿⡿⠀⠀⠀⠀⢸⡇⠀⠀⠺⠋⠀⠀⠀⠀⠘⣿⡆⠀⠀⠀⠀⠀⠘⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⣿⡇⠀⠀⠀⠀⢸⡇⠀⠀⠀⠀⠀⠀⣠⣤⣶⣿⣿⡄⠀⣴⣶⣶⣾⢿⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⣿⠀⠀⠀⠀⠀⢸⣷⠀⠀⠀⠀⠀⠺⠛⠉⠉⠉⢻⣿⡀⠉⠀⠀⠀⠀⣿⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣿⡿⠋⠀⠀⠀⠀⠀⠘⣿⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣧⠀⠀⠀⠀⠀⢸⣿⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡿⠀⠀⠀⠀⠀⠀⠀⠀⢹⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣇⠀⠀⠀⠀⠘⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⣻⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣿⡀⠀⠀⠀⠀⣿⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⡆⠀⣶⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠸⣿⡇⠀⠀⠀⠀⢹⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⡇⠀⠀⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣼⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀⠀⠀⣸⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⣤⣴⠾⠛⢛⣿⣿⣿⣷⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣦⣤⣤⣤⣤⣤⣤⣤⣴⣿⣿⠿⠿⣿⣿⡿⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⣿⠛⠛⠛⠉⠁⠀⠀⢿⣿⠋⠁⠀⠈⠉⠉⠉⠉⠉⠉⠉⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⣿⡀⠀⠀⠀⠀⠀⠀⠀⢿⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢿⣦⠀⠀⠀⠀⠀⠀⠸⣿⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣷⣄⠀⠀⠀⠀⢀⣿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠛⠿⣶⣶⠶⠟⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀</textarea>>
+	<br><br><br>
+
+    <script>
+		    // 在使用者準備關閉網頁時彈出警示訊息
+	    window.addEventListener('beforeunload', function(e) {
+	      // 取消關閉網頁的預設行為
+	      e.preventDefault();
+	      // 設定自訂的警示訊息
+	      e.returnValue = '';
+	    });
+
+    	var divArray = document.getElementsByTagName("div");
+    	var day = new Date().getDate();
+
+    	function combine(thisbutt){
+    		var text = thisbutt.parentNode.parentNode.cells[0].lastChild;
+    		var combineBefore = text.value;
+			var eachone = combineBefore.split("http");
+			var bracketsleft = new RegExp(/[(].*[)]/);
+			var bracketsright = new RegExp(/[)]\n/);
+			var combineAfter = combineBefore.split("\n\n")[0].slice(0,eachone[0].search(bracketsright));
+
+			for (let index = 1; index < eachone.length-1; index++) {
+			    var start = eachone[index].search(bracketsleft);
+			    var end = eachone[index].search(bracketsright);
+			    eachone[index] = eachone[index].slice(start+1,end);
+			    combineAfter+= "、"+eachone[index];
+			}
+			combineAfter+= combineBefore.split("\n\n")[0].slice(eachone[0].search(bracketsright));
+			text.value = combineAfter;
+    	}
+
+    	function autogrow(text){    		
+    		var adjustedHeight=text.clientHeight;			            
+			adjustedHeight=Math.max(text.scrollHeight,adjustedHeight);
+			if (adjustedHeight>text.clientHeight){
+				text.style.height=adjustedHeight+'px';
+			}
+    	}
+
+    	function sortall(){
+	    	var descriptionArray = new Array(4);
+	    	descriptionArray[0] = "今(" + day + ")日"+hour.value+"時新北市政府市政新聞彙整\n\n新聞局 新聞聯繫科 敬啟\n\n----------------------------------------------\n市政輿情，如下：\n\n";
+	    	descriptionArray[1] = "今("+ day + ")日"+hour.value+"時新北市政府重點新聞彙整\n\n新聞局 新聞聯繫科 敬啟\n-----------------------------------------------\n\n";
+	    	descriptionArray[2] = "今("+ day + ")日"+hour.value+"時新北市政府社群新聞彙整\n\n新聞局 新聞聯繫科 敬啟\n----------------------------------------------\n\n";
+
+    		var finalltext = document.getElementById("finallcontent");
+    		finalltext.value = ""; 
+    		for(var des in descriptionArray){
+    			finalltext.value += descriptionArray[des] ;
+    			var allthiscontent = divArray[des].getElementsByTagName("textarea");
+    			for (let con = 0; con< allthiscontent.length;con++) {
+    				finalltext.value += allthiscontent[con].value+"\n\n";
+    			}
+    		}
+
+
+	  //       if(inSec.tagName=="TEXTAREA" && inSec.value!=""){
+			//     text.value = text.value+ inSec.value+"\n\n";       
+			// }
+			autogrow(finalltext);    		
+    	}
+
+    	function addNo(){
+			var rules = new RegExp(/[^\n].*[(].*[)]\n/);
+
+			for (var d = 0; d < divArray.length; d++) {			
+				allTextarea = divArray[d].getElementsByTagName("textarea");
+				for (let o = 0; o < allTextarea.length; o++) {
+				    var textslice = allTextarea[o].value.split("http");
+				    var newContent = "";
+				    if (textslice.length>2){
+				        newContent += (o+1) + "-1. ";    
+				        newContent += textslice[0]+"http";
+				    }else if(textslice.length>1){
+				        newContent += (o+1)+ ". ";
+				        newContent += textslice[0]+"http";
+				    }
+				    
+				    for (let i = 1; i < textslice.length-1; i++) {
+				        titleStart = textslice[i].search(rules);
+				        newContent += textslice[i].slice(0, titleStart) +(o+1)+ "-" + (i+1)+ ". "+ textslice[i].slice(titleStart)+"http";
+				    }
+				    if (textslice[textslice.length-1].search('\n')>-1) {
+				    	newContent += textslice[textslice.length-1].slice(0,textslice[textslice.length-1].search('\n'));
+				    }else{
+				    	newContent += textslice[textslice.length-1];
+				    }
+				    
+				    allTextarea[o].value = newContent;
+				}
+			}
+			sortall();
+    	}
+
+    	function removeNo(){
+		var rules = new RegExp(/[^\n].*[(].*[)]\n/);
+		allTextarea = document.getElementsByName("post");
+		for (let o = 0; o < allTextarea.length; o++) {
+		    var textslice = allTextarea[o].value.split("http");
+		    var newContent = "";
+
+		    for (let i = 0; i < textslice.length-1; i++) {
+		        if (/\d+-\d+[.]\s/.test(textslice[i]) == true) {
+		            noStart = textslice[i].search(/\d+-\d+[.]\s/);
+		            tStart = textslice[i].match(/\d+-\d+[.]\s/)[0].length;
+		        	newContent += textslice[i].slice(0, noStart)+ textslice[i].slice(noStart+tStart)+"http";   
+		    	}else if(/(\n\d-+)|(^\d+-+)\d+[.].+[^\n].+[(].*[)]\n/.test(textslice[i]) == true){
+		        	noStart = textslice[i].search(/\d+-\d+[.]/);
+		            tStart = textslice[i].match(/\d+-\d+[.]/)[0].length;
+		        	newContent += textslice[i].slice(0, noStart)+ textslice[i].slice(noStart+tStart)+"http"; 
+		    	}else if(/\d+[.]\s/.test(textslice[i]) == true){
+		    		noStart = textslice[i].search(/\d+[.]\s/);
+		            tStart = textslice[i].match(/\d+[.]\s/)[0].length;
+		        	newContent += textslice[i].slice(0, noStart)+ textslice[i].slice(noStart+tStart)+"http"; 
+		    	}else if(/(\n\d)|^\d+[.].*[^\n].*[(].*[)]\n/.test(textslice[i]) == true){
+		    		noStart = textslice[i].search(/\d+[.]/);
+		            tStart = textslice[i].match(/\d+[.]/)[0].length;
+		        	newContent += textslice[i].slice(0, noStart)+ textslice[i].slice(noStart+tStart)+"http"; 
+		    	}else{
+		            newContent +=textslice[i]+"http";
+		        }      
+		    }
+		    
+		    newContent += textslice[textslice.length-1];
+		    allTextarea[o].value = newContent;
+		}			  		
+    	}
+
+    	function addPost(thisbutt){	    
+
+		    //num 取得table的現有欄位數+1(從0開始計算)
+		    var thisTable = document.createElement("table");
+		    // Tr 的 .insertRow 就是在 table 欄位中新增一個 Row num 表示新增在最後一筆
+		    var Tr = thisTable.insertRow(0);
+		    // Td 的.insertCell 在 Tr中新增一個 td Tr.cells.length 在Tr中 Td最後欄位新增一個Td 
+		    Td1 = Tr.insertCell(Tr.cells.length);
+		    Td2 = Tr.insertCell(Tr.cells.length);
+		    Td2.setAttribute('onmouseover', "dragReady(this)");
+		    Td2.setAttribute('onmouseleave', "dragStop(this)");
+		    Td1.innerHTML='<textarea name="post" style="width: 540px; height: 35px;"  oninput ="autogrow(this)"></textarea>';
+		    Td2.innerHTML='<button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button>';
+		    var div = thisbutt.parentNode.parentNode.parentNode.parentNode.parentNode;
+		    div.insertBefore(thisTable,thisbutt.parentNode.parentNode.parentNode.parentNode.nextSibling); //appendChild
+		    (()=> {enableDragSort('drag-sort-enable')})();
+    			    		
+    	}
+
+    	function removePost(thisbutt){
+		    var div = thisbutt.parentNode.parentNode.parentNode.parentNode.parentNode;
+		    div.removeChild(thisbutt.parentNode.parentNode.parentNode.parentNode);  
+    	}
+
+		/* Made with love by @fitri
+		 This is a component of my ReactJS project
+		 https://codepen.io/fitri/full/oWovYj/ */
+
+		function enableDragSort(listClass) {
+		  const sortableLists = document.getElementsByClassName(listClass);
+		  Array.prototype.map.call(sortableLists, (list) => {enableDragList(list)});
+		}
+
+		function enableDragList(list) {
+		  Array.prototype.map.call(list.children, (item) => {enableDragItem(item)});
+		}
+
+		function enableDragItem(item) {
+			// item.setAttribute('draggable', true);
+			item.ondrag = handleDrag;
+			item.ondragend = handleDrop;
+		  
+		}
+
+		function handleDrag(item) {
+		  const selectedItem = item.target,
+		        list = selectedItem.parentNode,
+		        x = event.clientX,
+		        y = event.clientY;
+		  
+		  selectedItem.classList.add('drag-sort-active');
+		  let swapItem = document.elementFromPoint(x, y) === null ? selectedItem : document.elementFromPoint(x, y);
+		  if (list === swapItem.parentNode) {
+		    swapItem = swapItem !== selectedItem.nextSibling ? swapItem : swapItem.nextSibling;
+		    list.insertBefore(selectedItem, swapItem);
+		  }
+		}
+
+		function handleDrop(item) {
+		  item.target.classList.remove('drag-sort-active');
+		}
+
+		(()=> {enableDragSort('drag-sort-enable')})();
+
+
+		function dragReady(d) {
+			var dragdiv = d.parentNode.parentNode.parentNode.parentNode;
+			for (var o = 0; o < dragdiv.children.length; o++) {
+			 	dragdiv.children[o].setAttribute('draggable', true);
+			}			    
+		}
+		function dragStop(d) {
+			var dragdiv = d.parentNode.parentNode.parentNode.parentNode;
+			for (var o = 0; o < dragdiv.children.length; o++) {
+			    dragdiv.children[o].setAttribute('draggable', false);
+			}
+		}
+
+
+    </script>
+  </body>
+</html>
