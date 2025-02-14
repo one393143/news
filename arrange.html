@@ -43,8 +43,10 @@
   </head>
   <body>
 
-	<button onclick="addNo()">編號</button>
-	<button onclick="removeNo()">移除編號</button>
+    <button onclick="addNo()">編號</button>
+    <button onclick="removeNo()">移除編號</button>
+    <button onclick="saveContent()" style="background-color: #4CAF50; color: white;">儲存內容</button>
+    <button onclick="loadContent()" style="background-color: #008CBA; color: white;">載入內容</button>
 	
 		<select id="hour">
 			<option value=10>10</option>	
@@ -372,6 +374,78 @@
 			}
 		}
 
+        // 新增儲存功能
+        function saveContent() {
+            const contentData = {
+                hour: document.getElementById('hour').value,
+                sections: []
+            };
+            
+            // 獲取所有區塊的內容
+            const sections = document.getElementsByClassName('drag-sort-enable');
+            for(let i = 0; i < sections.length; i++) {
+                const sectionData = {
+                    id: sections[i].id,
+                    posts: []
+                };
+                
+                // 獲取該區塊中所有的 textarea 內容
+                const textareas = sections[i].getElementsByTagName('textarea');
+                for(let j = 0; j < textareas.length; j++) {
+                    sectionData.posts.push(textareas[j].value);
+                }
+                
+                contentData.sections.push(sectionData);
+            }
+            
+            // 儲存到 localStorage
+            localStorage.setItem('contentData', JSON.stringify(contentData));
+            alert('內容已儲存！');
+        }
+        
+        // 新增讀取功能
+        function loadContent() {
+            const savedData = localStorage.getItem('contentData');
+            if (!savedData) {
+                alert('沒有找到已儲存的內容！');
+                return;
+            }
+            
+            const contentData = JSON.parse(savedData);
+            
+            // 設置時間
+            document.getElementById('hour').value = contentData.hour;
+            
+            // 恢復各區塊內容
+            contentData.sections.forEach(section => {
+                const sectionElement = document.getElementById(section.id);
+                if (sectionElement) {
+                    // 清空現有內容
+                    while (sectionElement.firstChild) {
+                        sectionElement.removeChild(sectionElement.firstChild);
+                    }
+                    
+                    // 重建內容
+                    section.posts.forEach(post => {
+                        const table = document.createElement('table');
+                        const tr = table.insertRow(0);
+                        const td1 = tr.insertCell(0);
+                        const td2 = tr.insertCell(1);
+                        
+                        td1.innerHTML = `<textarea name="post" style="width: 540px; height: 35px;" oninput="autogrow(this)">${post}</textarea>`;
+                        td2.setAttribute('onmouseover', "dragReady(this)");
+                        td2.setAttribute('onmouseleave', "dragStop(this)");
+                        td2.innerHTML = '<button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button>';
+                        
+                        sectionElement.appendChild(table);
+                    });
+                }
+            });
+            
+            // 重新啟用拖曳排序
+            enableDragSort('drag-sort-enable');
+            alert('內容已載入！');
+        }
 
     </script>
   </body>
