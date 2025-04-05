@@ -257,6 +257,33 @@
         .btn-info {
             background-color: var(--info-color);
         }
+        /* 添加到現有的CSS樣式中 */
+		.strategy-params {
+		    margin-top: 15px;
+		    padding-top: 10px;
+		    border-top: 1px dashed #ddd;
+		}
+
+		.strategy-params h4 {
+		    margin-top: 0;
+		    margin-bottom: 8px;
+		    font-size: 16px;
+		    color: #666;
+		}
+
+		/* 讓參數顯示成兩列 */
+		@media (min-width: 576px) {
+		    .strategy-params {
+		        display: grid;
+		        grid-template-columns: 1fr 1fr;
+		        gap: 5px 15px;
+		    }
+		    
+		    .strategy-params h4 {
+		        grid-column: 1 / -1;
+		    }
+		}
+
     </style>
 </head>
 <body>
@@ -338,12 +365,25 @@
                 <button id="stop-button" class="stop-button">停止</button>
             </div>
             
-            <div class="round-details">
-                <h3>回合詳情</h3>
-                <div id="detail-line1" class="detail-item"></div>
-                <div id="detail-line2" class="detail-item"></div>
-                <div id="detail-line3" class="detail-item"></div>
-            </div>
+		<!-- 修改模擬頁面的回合詳情區域 -->
+		<div class="round-details">
+		    <h3>回合詳情</h3>
+		    <div id="detail-line1" class="detail-item"></div>
+		    <div id="detail-line2" class="detail-item"></div>
+		    <div id="detail-line3" class="detail-item"></div>
+		    
+		    <!-- 新增策略參數顯示區域 -->
+		    <div class="strategy-params">
+		        <h4>策略參數</h4>
+		        <div id="param-initial-money" class="detail-item"></div>
+		        <div id="param-target-profit" class="detail-item"></div>
+		        <div id="param-initial-bet" class="detail-item"></div>
+		        <div id="param-win-probability" class="detail-item"></div>
+		        <div id="param-odds" class="detail-item"></div>
+		        <div id="param-multiplier" class="detail-item"></div>
+		    </div>
+		</div>
+
             
             <div class="charts-container">
                 <div class="chart-wrapper">
@@ -916,13 +956,13 @@
 		    // 開始模擬
 		    function startSimulation() {
 		        // 獲取設定值
-		        const initialMoney = parseFloat(initialMoneyInput.value);
-		        const targetProfit = parseFloat(targetProfitInput.value);
-		        const initialBet = parseFloat(initialBetInput.value);
-		        const winProbability = parseFloat(winProbabilityInput.value) / 100;
-		        const odds = parseFloat(oddsInput.value);
-		        const multiplier = parseFloat(multiplierInput.value);
-		        const speed = parseInt(simulationSpeedSelect.value);
+			    const initialMoney = parseFloat(initialMoneyInput.value);
+			    const targetProfit = parseFloat(targetProfitInput.value);
+			    const initialBet = parseFloat(initialBetInput.value);
+			    const winProbability = parseFloat(winProbabilityInput.value) / 100;
+			    const odds = parseFloat(oddsInput.value);
+			    const multiplier = parseFloat(multiplierInput.value);
+			    const speed = parseInt(simulationSpeedSelect.value);
 		        
 		        // 驗證輸入
 		        if (isNaN(initialMoney) || initialMoney <= 0 ||
@@ -952,7 +992,13 @@
 		        
 		        // 更新UI
 		        updateSimulationUI(0, initialMoney, initialBet, "開始模擬...", [initialMoney], [initialBet]);
-		        
+		        // 顯示策略參數
+			    document.getElementById('param-initial-money').textContent = `初始資金: ${initialMoney} 元`;
+			    document.getElementById('param-target-profit').textContent = `目標獲利: ${targetProfit} 元`;
+			    document.getElementById('param-initial-bet').textContent = `初始下注: ${initialBet} 元`;
+			    document.getElementById('param-win-probability').textContent = `獲勝機率: ${winProbabilityInput.value}%`;
+			    document.getElementById('param-odds').textContent = `賠率: 1:${odds}`;
+			    document.getElementById('param-multiplier').textContent = `失敗後倍數: ${multiplier.toFixed(1)}`;
 		        // 開始模擬
 		        isSimulating = true;
 		        
