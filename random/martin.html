@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>馬丁格爾下注模擬器</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --danger-color: #f44336;
+            --info-color: #2196F3;
+            --bg-color: #f0f0f0;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --gold-color: #FFD700;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .roulette-section {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .settings-section {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .roulette-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+        }
+        
+        #roulette-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .start-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 12px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .start-button:hover {
+            background-color: #45a049;
+        }
+        
+        .settings-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .form-group .slider-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-group input[type="range"] {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .form-group .value-display {
+            min-width: 40px;
+            text-align: right;
+        }
+        
+        .speed-selector {
+            margin-top: 20px;
+        }
+        
+        .speed-selector select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        /* 模擬界面樣式 */
+        .simulation-container {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .simulation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .small-roulette {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .stop-button {
+            padding: 8px 16px;
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .round-details {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .round-details h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        
+        .detail-item {
+            margin: 5px 0;
+        }
+        
+        .charts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 250px;
+        }
+        
+        /* 結果界面樣式 */
+        .result-container {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .result-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .result-success {
+            color: var(--primary-color);
+        }
+        
+        .result-fail {
+            color: var(--danger-color);
+        }
+        
+        .result-manual {
+            color: var(--info-color);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+        }
+        
+        .btn-info {
+            background-color: var(--info-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>馬丁格爾下注模擬器</h1>
+        </header>
+        
+        <!-- 開始頁面 -->
+        <div id="start-screen" class="main-content">
+            <div class="roulette-section">
+                <div class="roulette-container">
+                    <canvas id="roulette-canvas"></canvas>
+                    <button id="start-button" class="start-button">開始模擬</button>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h2 class="settings-title">模擬設定</h2>
+                
+                <div class="form-group">
+                    <label for="initial-money">初始資金:</label>
+                    <input type="number" id="initial-money" min="100" step="100" value="1000">
+                </div>
+                
+                <div class="form-group">
+                    <label for="target-profit">目標獲利:</label>
+                    <input type="number" id="target-profit" min="100" step="100" value="500">
+                </div>
+                
+                <div class="form-group">
+                    <label for="initial-bet">初始下注金額:</label>
+                    <input type="number" id="initial-bet" min="1" step="1" value="1">
+                </div>
+                
+                <div class="form-group">
+                    <label for="win-probability">獲勝機率 (%):</label>
+                    <div class="slider-container">
+                        <input type="range" id="win-probability" min="1" max="50" value="50" step="1">
+                        <span id="win-probability-value" class="value-display">50</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="odds">賠率 (1:X):</label>
+                    <div class="slider-container">
+                        <input type="range" id="odds" min="1" max="100" value="1" step="1">
+                        <span id="odds-value" class="value-display">1</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="multiplier">失敗後下注倍數:</label>
+                    <div class="slider-container">
+                        <input type="range" id="multiplier" min="1.1" max="5" value="2" step="0.1">
+                        <span id="multiplier-value" class="value-display">2.0</span>
+                    </div>
+                </div>
+                
+                <div class="form-group speed-selector">
+                    <label for="simulation-speed">模擬速度:</label>
+                    <select id="simulation-speed">
+                        <option value="500">極慢</option>
+                        <option value="200">慢速</option>
+                        <option value="50" selected>中速</option>
+                        <option value="10">快速</option>
+                        <option value="1">極快</option>
+                        <option value="0">即時</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 模擬頁面 -->
+        <div id="simulation-screen" class="simulation-container">
+            <div class="simulation-header">
+                <canvas id="small-roulette" class="small-roulette" width="80" height="80"></canvas>
+                <h2>馬丁格爾下注模擬進行中...</h2>
+                <button id="stop-button" class="stop-button">停止</button>
+            </div>
+            
+            <div class="round-details">
+                <h3>回合詳情</h3>
+                <div id="detail-line1" class="detail-item"></div>
+                <div id="detail-line2" class="detail-item"></div>
+                <div id="detail-line3" class="detail-item"></div>
+            </div>
+            
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <canvas id="balance-chart"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="bet-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 結果頁面 -->
+        <div id="result-screen" class="result-container">
+            <div class="result-header">
+                <h2 id="result-title" class="result-manual">模擬結果: 手動停止</h2>
+            </div>
+            
+            <div class="button-group">
+                <button id="back-to-home" class="btn btn-info">返回首頁</button>
+                <button id="restart-simulation" class="btn btn-primary">重新模擬</button>
+            </div>
+            
+            <div class="round-details">
+                <h3>回合詳情</h3>
+                <div id="result-rounds" class="detail-item">總回合數: 0</div>
+                <div id="result-final-money" class="detail-item">最終資金: 0 元</div>
+                <div id="result-total-bet" class="detail-item">總投入金額: 0 元</div>
+            </div>
+            
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <canvas id="result-balance-chart"></canvas>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="result-bet-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript 代碼放在這裡，body 結束標籤之前 -->
+    <script>
+		document.addEventListener('DOMContentLoaded', function() {
+		    // 獲取DOM元素
+		    const startScreen = document.getElementById('start-screen');
+		    const simulationScreen = document.getElementById('simulation-screen');
+		    const resultScreen = document.getElementById('result-screen');
+		    
+		    const startButton = document.getElementById('start-button');
+		    const stopButton = document.getElementById('stop-button');
+		    const backToHomeButton = document.getElementById('back-to-home');
+		    const restartSimulationButton = document.getElementById('restart-simulation');
+		    
+		    // 獲取設定輸入元素
+		    const initialMoneyInput = document.getElementById('initial-money');
+		    const targetProfitInput = document.getElementById('target-profit');
+		    const initialBetInput = document.getElementById('initial-bet');
+		    const winProbabilityInput = document.getElementById('win-probability');
+		    const winProbabilityValue = document.getElementById('win-probability-value');
+		    const oddsInput = document.getElementById('odds');
+		    const oddsValue = document.getElementById('odds-value');
+		    const multiplierInput = document.getElementById('multiplier');
+		    const multiplierValue = document.getElementById('multiplier-value');
+		    const simulationSpeedSelect = document.getElementById('simulation-speed');
+		    
+		    // 獲取詳情顯示元素
+		    const detailLine1 = document.getElementById('detail-line1');
+		    const detailLine2 = document.getElementById('detail-line2');
+		    const detailLine3 = document.getElementById('detail-line3');
+		    
+		    // 獲取結果顯示元素
+		    const resultTitle = document.getElementById('result-title');
+		    const resultRounds = document.getElementById('result-rounds');
+		    const resultFinalMoney = document.getElementById('result-final-money');
+		    const resultTotalBet = document.getElementById('result-total-bet');
+		    
+		    // 獲取畫布元素
+		    const rouletteCanvas = document.getElementById('roulette-canvas');
+		    const smallRouletteCanvas = document.getElementById('small-roulette');
+		    const balanceChartCanvas = document.getElementById('balance-chart');
+		    const betChartCanvas = document.getElementById('bet-chart');
+		    const resultBalanceChartCanvas = document.getElementById('result-balance-chart');
+		    const resultBetChartCanvas = document.getElementById('result-bet-chart');
+		    
+		    // 設置畫布上下文
+		    const rouletteCtx = rouletteCanvas.getContext('2d');
+		    const smallRouletteCtx = smallRouletteCanvas.getContext('2d');
+		    
+		    // 設置輪盤大小
+		    rouletteCanvas.width = 300;
+		    rouletteCanvas.height = 300;
+		    
+		    // 模擬狀態
+		    let isSimulating = false;
+		    let simulationInterval = null;
+		    let rotationAngle = 0;
+		    let rotationInterval = null;
+		    
+		    // 模擬數據
+		    let simulationData = {
+		        currentRound: 0,
+		        currentMoney: 0,
+		        currentBet: 0,
+		        balanceHistory: [],
+		        betHistory: []
+		    };
+		    
+		    // 圖表對象
+		    let balanceChart = null;
+		    let betChart = null;
+		    let resultBalanceChart = null;
+		    let resultBetChart = null;
+		    
+		    // 初始化頁面
+		    initializeUI();
+		    
+		    // 繪製初始輪盤
+		    drawRoulette(rouletteCtx, rouletteCanvas.width, 0);
+		    
+		    // 添加事件監聽器
+		    startButton.addEventListener('click', startSimulation);
+		    stopButton.addEventListener('click', stopSimulation);
+		    backToHomeButton.addEventListener('click', showStartScreen);
+		    restartSimulationButton.addEventListener('click', startSimulation);
+		    
+		    // 滑塊值更新
+		    winProbabilityInput.addEventListener('input', function() {
+		        winProbabilityValue.textContent = this.value;
+		    });
+		    
+		    oddsInput.addEventListener('input', function() {
+		        oddsValue.textContent = this.value;
+		    });
+		    
+		    multiplierInput.addEventListener('input', function() {
+		        multiplierValue.textContent = parseFloat(this.value).toFixed(1);
+		    });
+		    
+		    // 初始化UI
+		    function initializeUI() {
+		        // 顯示開始頁面，隱藏其他頁面
+		        startScreen.style.display = 'flex';
+		        simulationScreen.style.display = 'none';
+		        resultScreen.style.display = 'none';
+		    }
+		    
+		    // 繪製輪盤
+		    function drawRoulette(ctx, size, angle) {
+		        ctx.clearRect(0, 0, size, size);
+		        
+		        const center = size / 2;
+		        const outerRadius = size / 2 - 10;
+		        const innerRadius = outerRadius - (size * 0.15);
+		        
+		        // 繪製輪盤格子
+		        const colors = ["#B22222", "#000000"];  // 紅黑交替
+		        const numSlots = 37;  // 0-36
+		        
+		        for (let i = 0; i < numSlots; i++) {
+		            const startAngle = 2 * Math.PI * i / numSlots + angle;
+		            const endAngle = 2 * Math.PI * (i + 1) / numSlots + angle;
+		            
+		            // 繪製扇形
+		            const colorIdx = i > 0 ? i % 2 : 2;  // 0為綠色
+		            const color = i > 0 ? colors[colorIdx - 1] : "#008000";
+		            
+		            ctx.beginPath();
+		            ctx.moveTo(center, center);
+		            ctx.arc(center, center, outerRadius, startAngle, endAngle);
+		            ctx.closePath();
+		            ctx.fillStyle = color;
+		            ctx.fill();
+		        }
+		        
+		        // 繪製中心圓
+		        ctx.beginPath();
+		        ctx.arc(center, center, innerRadius, 0, 2 * Math.PI);
+		        ctx.fillStyle = "#800000";
+		        ctx.fill();
+		        ctx.strokeStyle = "#FFD700";
+		        ctx.lineWidth = 2;
+		        ctx.stroke();
+		        
+		        // 繪製外圓
+		        ctx.beginPath();
+		        ctx.arc(center, center, outerRadius + 5, 0, 2 * Math.PI);
+		        ctx.strokeStyle = "#FFD700";
+		        ctx.lineWidth = 3;
+		        ctx.stroke();
+		    }
+		    
+		    // 旋轉輪盤動畫
+		    function rotateRoulette() {
+		        rotationAngle += 0.1;
+		        drawRoulette(smallRouletteCtx, smallRouletteCanvas.width, rotationAngle);
+		        
+		        if (isSimulating) {
+		            rotationInterval = requestAnimationFrame(rotateRoulette);
+		        }
+		    }
+
+		// 初始化模擬圖表
+			function initSimulationCharts(initialMoney, targetProfit) {
+			    // 銷毀舊圖表（如果存在）
+			    if (balanceChart) balanceChart.destroy();
+			    if (betChart) betChart.destroy();
+			    
+			    // 資金變化圖
+			    balanceChart = new Chart(balanceChartCanvas, {
+			        type: 'line',
+			        data: {
+			            labels: [0],
+			            datasets: [
+			                {
+			                    label: '當前資金',
+			                    data: [initialMoney],
+			                    borderColor: '#2196F3',
+			                    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+			                    borderWidth: 2,
+			                    tension: 0.1,
+			                    fill: true
+			                },
+			                {
+			                    label: '',
+			                    data: [initialMoney],  // 只需要一個起始點
+			                    borderColor: '#f44336',
+			                    borderWidth: 2,
+			                    borderDash: [5, 5],
+			                    pointStyle: false,
+			                    fill: false
+			                },
+			                {
+			                    label: '',
+			                    data: [initialMoney + targetProfit],  // 只需要一個起始點
+			                    borderColor: '#4CAF50',
+			                    borderWidth: 2,
+			                    borderDash: [5, 5],
+			                    pointStyle: false,
+			                    fill: false
+			                }
+			            ]
+			        },
+			        options: {
+			            animation: false,
+			            responsive: true,
+			            maintainAspectRatio: false,
+			            plugins: {
+			                title: {
+			                    display: true,
+			                    text: '資金變化',
+			                    font: {
+			                        size: 16
+			                    }
+			                },
+			                legend: {
+			                    position: 'top',
+			                    labels: {
+			                        usePointStyle: true
+			                    }
+			                },
+			                annotation: {
+			                    annotations: {
+			                        initialLine: {
+			                            type: 'line',
+			                            yMin: initialMoney,
+			                            yMax: initialMoney,
+			                            borderColor: '#f44336',
+			                            borderWidth: 2,
+			                            borderDash: [5, 5]
+			                        },
+			                        targetLine: {
+			                            type: 'line',
+			                            yMin: initialMoney + targetProfit,
+			                            yMax: initialMoney + targetProfit,
+			                            borderColor: '#4CAF50',
+			                            borderWidth: 2,
+			                            borderDash: [5, 5]
+			                        }
+			                    }
+			                }
+			            },
+			            scales: {
+			                y: {
+			                    beginAtZero: true,
+			                    title: {
+			                        display: true,
+			                        text: '金額'
+			                    }
+			                },
+			                x: {
+			                    title: {
+			                        display: true,
+			                        text: '回合'
+			                    }
+			                }
+			            }
+			        }
+			    });
+		        // 下注金額變化圖
+		        betChart = new Chart(betChartCanvas, {
+		            type: 'line',
+		            data: {
+		                labels: [0],
+		                datasets: [
+		                    {
+		                        label: '下注金額',
+		                        data: [0],
+		                        borderColor: '#f44336',
+		                        backgroundColor: 'rgba(244, 67, 54, 0.1)',
+		                        borderWidth: 2,
+		                        tension: 0.1,
+		                        fill: true
+		                    }
+		                ]
+		            },
+		            options: {
+		                responsive: true,
+		                maintainAspectRatio: false,
+		                plugins: {
+		                    title: {
+		                        display: true,
+		                        text: '下注金額變化',
+		                        font: {
+		                            size: 16
+		                        }
+		                    }
+		                },
+		                scales: {
+		                    y: {
+		                        beginAtZero: true,
+		                        title: {
+		                            display: true,
+		                            text: '下注金額'
+		                        }
+		                    },
+		                    x: {
+		                        title: {
+		                            display: true,
+		                            text: '回合'
+		                        }
+		                    }
+		                }
+		            }
+		        });
+		    }
+		    
+		    // 創建結果圖表
+		    function createResultCharts(result) {
+		        // 銷毀舊圖表（如果存在）
+		        if (resultBalanceChart) resultBalanceChart.destroy();
+		        if (resultBetChart) resultBetChart.destroy();
+		        
+		        const initialMoney = result.balanceHistory[0];
+		        const targetMoney = initialMoney + parseFloat(targetProfitInput.value);
+		        
+		        // 資金變化圖
+		        resultBalanceChart = new Chart(resultBalanceChartCanvas, {
+		            type: 'line',
+		            data: {
+		                labels: Array.from({ length: result.balanceHistory.length }, (_, i) => i),
+		                datasets: [
+		                    {
+		                        label: '當前資金',
+		                        data: result.balanceHistory,
+		                        borderColor: '#2196F3',
+		                        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+		                        borderWidth: 2,
+		                        tension: 0.1,
+		                        fill: true
+		                    }
+		                ]
+		            },
+		            options: {
+		                responsive: true,
+		                maintainAspectRatio: false,
+		                plugins: {
+		                    title: {
+		                        display: true,
+		                        text: '資金變化',
+		                        font: {
+		                            size: 16
+		                        }
+		                    },
+		                    annotation: {
+		                        annotations: {
+		                            initialLine: {
+		                                type: 'line',
+		                                yMin: initialMoney,
+		                                yMax: initialMoney,
+		                                borderColor: '#f44336',
+		                                borderWidth: 2,
+		                            },
+		                            targetLine: {
+		                                type: 'line',
+		                                yMin: targetMoney,
+		                                yMax: targetMoney,
+		                                borderColor: '#4CAF50',
+		                                borderWidth: 2,
+		                            },
+		                            endPoint: {
+		                                type: 'point',
+		                                xValue: result.rounds,
+		                                yValue: result.finalMoney,
+		                                backgroundColor: result.result === '成功' ? '#4CAF50' : 
+		                                                (result.result === '破產' ? '#f44336' : '#2196F3'),
+		                                radius: 8
+		                            }
+		                        }
+		                    }
+		                },
+		                scales: {
+		                    y: {
+		                        beginAtZero: true,
+		                        title: {
+		                            display: true,
+		                            text: '金額'
+		                        }
+		                    },
+		                    x: {
+		                        title: {
+		                            display: true,
+		                            text: '回合'
+		                        }
+		                    }
+		                }
+		            }
+		        });
+		        
+		        // 下注金額變化圖
+		        resultBetChart = new Chart(resultBetChartCanvas, {
+		            type: 'line',
+		            data: {
+		                labels: Array.from({ length: result.betHistory.length }, (_, i) => i),
+		                datasets: [
+		                    {
+		                        label: '下注金額',
+		                        data: result.betHistory,
+		                        borderColor: '#f44336',
+		                        backgroundColor: 'rgba(244, 67, 54, 0.1)',
+		                        borderWidth: 2,
+		                        tension: 0.1,
+		                        fill: true
+		                    }
+		                ]
+		            },
+		            options: {
+		                responsive: true,
+		                maintainAspectRatio: false,
+		                plugins: {
+		                    title: {
+		                        display: true,
+		                        text: '下注金額變化',
+		                        font: {
+		                            size: 16
+		                        }
+		                    }
+		                },
+		                scales: {
+		                    y: {
+		                        beginAtZero: true,
+		                        title: {
+		                            display: true,
+		                            text: '下注金額'
+		                        }
+		                    },
+		                    x: {
+		                        title: {
+		                            display: true,
+		                            text: '回合'
+		                        }
+		                    }
+		                }
+		            }
+		        });
+		        
+		        // 添加回本點標記
+		        for (const recovery of result.recoveryRounds) {
+		            // 添加回本點標記到圖表
+		            const pointIndex = recovery[1];
+		            const pointValue = result.balanceHistory[pointIndex];
+		            
+		            // 添加標記點
+		            resultBalanceChart.data.datasets.push({
+		                label: `回本 #${recovery[0]}`,
+		                data: [{x: pointIndex, y: pointValue}],
+		                backgroundColor: '#FF9800',
+		                pointRadius: 8,
+		                pointHoverRadius: 10,
+		                showLine: false
+		            });
+		        }
+		        
+		        resultBalanceChart.update();
+		    }
+		    
+		    // 更新模擬UI
+		    function updateSimulationUI(roundCount, money, betAmount, resultText, balanceHistory, betHistory) {
+		        // 更新回合詳情
+		        if (roundCount === 0) {
+		            detailLine1.textContent = "模擬開始";
+		            detailLine2.textContent = `初始資金: ${money.toFixed(1)} 元`;
+		            detailLine3.textContent = `首次下注: ${betAmount.toFixed(1)} 元`;
+		        } else {
+		            detailLine1.textContent = `回合 ${roundCount}: 下注 ${betAmount.toFixed(1)} 元`;
+		            detailLine2.textContent = `結果: ${resultText}`;
+		            detailLine3.textContent = `資金: ${money.toFixed(1)} 元`;
+		        }
+		        
+		        // 更新圖表
+		        updateCharts(balanceHistory, betHistory);
+		    }
+		    
+		    // 更新圖表
+		    function updateCharts(balanceHistory, betHistory) {
+		        // 更新資金變化圖
+		        balanceChart.data.labels = Array.from({ length: balanceHistory.length }, (_, i) => i);
+		        balanceChart.data.datasets[0].data = balanceHistory;
+		        balanceChart.update();
+		        
+		        // 更新下注金額變化圖
+		        betChart.data.labels = Array.from({ length: betHistory.length }, (_, i) => i);
+		        betChart.data.datasets[0].data = betHistory;
+		        betChart.update();
+		    }
+		    
+		    // 顯示開始頁面
+		    function showStartScreen() {
+		        startScreen.style.display = 'flex';
+		        simulationScreen.style.display = 'none';
+		        resultScreen.style.display = 'none';
+		        
+		        // 停止任何正在進行的模擬
+		        stopSimulation();
+		    }
+		    
+		    // 顯示模擬頁面
+		    function showSimulationScreen() {
+		        startScreen.style.display = 'none';
+		        simulationScreen.style.display = 'flex';
+		        resultScreen.style.display = 'none';
+		    }
+		    
+		    // 顯示結果頁面
+		    function showResultScreen(result) {
+		        startScreen.style.display = 'none';
+		        simulationScreen.style.display = 'none';
+		        resultScreen.style.display = 'flex';
+		        
+		        // 更新結果標題
+		        if (result.result === "手動停止") {
+		            resultTitle.textContent = "模擬結果: 手動停止";
+		            resultTitle.className = "result-manual";
+		        } else if (result.result === "成功") {
+		            resultTitle.textContent = "模擬結果: 達成目標!";
+		            resultTitle.className = "result-success";
+		        } else {
+		            resultTitle.textContent = "模擬結果: 資金耗盡!";
+		            resultTitle.className = "result-fail";
+		        }
+		        
+		        // 更新結果詳情
+		        resultRounds.textContent = `總回合數: ${result.rounds}`;
+		        resultFinalMoney.textContent = `最終資金: ${result.finalMoney.toFixed(1)} 元`;
+		        resultTotalBet.textContent = `總投入金額: ${result.totalBet.toFixed(1)} 元`;
+		        
+		        // 創建結果圖表
+		        createResultCharts(result);
+		    }
+		    
+		    // 開始模擬
+		    function startSimulation() {
+		        // 獲取設定值
+		        const initialMoney = parseFloat(initialMoneyInput.value);
+		        const targetProfit = parseFloat(targetProfitInput.value);
+		        const initialBet = parseFloat(initialBetInput.value);
+		        const winProbability = parseFloat(winProbabilityInput.value) / 100;
+		        const odds = parseFloat(oddsInput.value);
+		        const multiplier = parseFloat(multiplierInput.value);
+		        const speed = parseInt(simulationSpeedSelect.value);
+		        
+		        // 驗證輸入
+		        if (isNaN(initialMoney) || initialMoney <= 0 ||
+		            isNaN(targetProfit) || targetProfit <= 0 ||
+		            isNaN(initialBet) || initialBet <= 0 ||
+		            isNaN(winProbability) || winProbability <= 0 || winProbability > 0.5 ||
+		            isNaN(odds) || odds <= 0 ||
+		            isNaN(multiplier) || multiplier <= 1) {
+		            alert("請輸入有效的設定值");
+		            return;
+		        }
+		        
+		        // 切換到模擬界面
+		        showSimulationScreen();
+		        
+		        // 初始化模擬數據
+		        simulationData = {
+		            currentRound: 0,
+		            currentMoney: initialMoney,
+		            currentBet: initialBet,
+		            balanceHistory: [initialMoney],
+		            betHistory: [initialBet]
+		        };
+		        
+		        // 初始化圖表
+		        initSimulationCharts(initialMoney, targetProfit);
+		        
+		        // 更新UI
+		        updateSimulationUI(0, initialMoney, initialBet, "開始模擬...", [initialMoney], [initialBet]);
+		        
+		        // 開始模擬
+		        isSimulating = true;
+		        
+		        // 開始旋轉輪盤
+		        rotationInterval = requestAnimationFrame(rotateRoulette);
+		        
+		        // 運行模擬
+		        runSimulation(initialMoney, targetProfit, initialBet, winProbability, odds, multiplier, speed);
+		    }
+		    
+		    // 停止模擬
+		    function stopSimulation() {
+		        isSimulating = false;
+		        
+		        // 清除所有定時器
+		        if (simulationInterval) {
+		            clearInterval(simulationInterval);
+		            simulationInterval = null;
+		        }
+		        
+		        // 停止輪盤旋轉
+		        if (rotationInterval) {
+		            cancelAnimationFrame(rotationInterval);
+		            rotationInterval = null;
+		        }
+		        
+		        // 如果正在模擬，創建手動停止結果
+		        if (simulationScreen.style.display === 'flex') {
+		            const result = {
+		                result: "手動停止",
+		                rounds: simulationData.currentRound,
+		                finalMoney: simulationData.currentMoney,
+		                totalBet: simulationData.betHistory.reduce((sum, bet) => sum + bet, 0),
+		                recoveryRounds: [],
+		                balanceHistory: simulationData.balanceHistory,
+		                betHistory: simulationData.betHistory
+		            };
+		            
+		            showResultScreen(result);
+		        }
+		    }
+		    
+		    // 運行模擬
+		    function runSimulation(initialMoney, targetProfit, initialBet, winProbability, odds, multiplier, speed) {
+		        let money = initialMoney;
+		        let profit = 0;
+		        let betAmount = initialBet;
+		        let balanceHistory = [money];
+		        let betHistory = [betAmount];
+		        let roundCount = 0;
+		        let totalBet = 0;
+		        let recoveryRounds = [];
+		        let recoveryCount = 0;
+		        
+		        // 更新UI
+		        updateSimulationUI(roundCount, money, betAmount, "開始模擬...", balanceHistory, betHistory);
+		        
+		        // 設置模擬間隔
+		        simulationInterval = setInterval(() => {
+		            if (!isSimulating) {
+		                clearInterval(simulationInterval);
+		                return;
+		            }
+		            
+		            roundCount++;
+		            
+		            // 檢查是否有足夠資金下注
+		            if (betAmount > money) {
+		                betAmount = money;
+		            }
+		            
+		            money -= betAmount;
+		            totalBet += betAmount;
+		            
+		            // 模擬下注結果
+		            const win = Math.random() < winProbability;
+		            let resultText = win ? "贏!" : "輸!";
+		            
+		            if (win) {
+		                // 贏了
+		                money += betAmount * (1 + odds);
+		                betAmount = initialBet;  // 重置為初始下注金額
+		                
+		                // 檢查是否回本
+		                if (money >= initialMoney && profit < 0) {
+		                    recoveryCount++;
+		                    recoveryRounds.push([recoveryCount, roundCount, totalBet]);
+		                    resultText += " (回本!)";
+		                }
+		            } else {
+		                // 輸了
+		                betAmount *= multiplier;  // 增加下注金額
+		            }
+		            
+		            profit = money - initialMoney;
+		            balanceHistory.push(money);
+		            betHistory.push(betAmount);
+		            
+		            // 保存當前狀態
+		            simulationData.currentRound = roundCount;
+		            simulationData.currentMoney = money;
+		            simulationData.currentBet = betAmount;
+		            simulationData.balanceHistory = balanceHistory;
+		            simulationData.betHistory = betHistory;
+		            
+		            // 更新界面
+		            updateSimulationUI(roundCount, money, betAmount, resultText, balanceHistory, betHistory);
+		            
+		            // 檢查是否達到目標或破產
+		            if (money <= 0 || profit >= targetProfit) {
+		                clearInterval(simulationInterval);
+		                isSimulating = false;
+		                
+		                // 創建結果
+		                const result = {
+		                    result: profit >= targetProfit ? "成功" : "破產",
+		                    rounds: roundCount,
+		                    finalMoney: money,
+		                    totalBet: totalBet,
+		                    recoveryRounds: recoveryRounds,
+		                    balanceHistory: balanceHistory,
+		                    betHistory: betHistory
+		                };
+		                
+		                // 顯示結果
+		                showResultScreen(result);
+		            }
+		        }, speed);
+		    }
+		});
+
+    </script>
+</body>
+</html>
