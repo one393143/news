@@ -2,7 +2,7 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>H.R. 7521 國家安全互動教材</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -51,6 +51,11 @@
         touch-action: manipulation;
       }
       
+      /* Safe Area for iPhone X+ */
+      .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+      }
+
       /* Range Input Reset */
       input[type=range] {
         -webkit-appearance: none; 
@@ -123,7 +128,7 @@
       // --- Components ---
 
       const Button = ({ children, variant = 'primary', size = 'md', className = '', ...props }) => {
-          const baseStyle = "font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 shadow-lg touch-manipulation";
+          const baseStyle = "font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 shadow-lg touch-manipulation select-none";
           const variants = {
               primary: "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/50",
               secondary: "bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600",
@@ -149,30 +154,29 @@
 
       const IntroSlide = ({ onNext }) => {
           return (
-              <div className="flex flex-col items-center justify-center h-full text-center space-y-6 md:space-y-8 p-4 md:p-8 relative overflow-hidden overflow-y-auto">
+              <div className="flex flex-col items-center justify-center h-full text-center space-y-6 md:space-y-8 p-4 md:p-8 relative overflow-hidden overflow-y-auto w-full">
                   <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
                       <div className="absolute top-10 left-10 w-32 h-32 border-2 border-blue-500 rounded-full animate-ping" />
                       <div className="absolute bottom-20 right-20 w-64 h-64 border border-slate-600 rounded-full" />
                   </div>
 
-                  <div className="z-10 bg-blue-500/10 p-4 md:p-6 rounded-2xl border border-blue-500/30 backdrop-blur-sm animate-float mt-8 md:mt-0">
+                  <div className="z-10 bg-blue-500/10 p-4 md:p-6 rounded-2xl border border-blue-500/30 backdrop-blur-sm animate-float mt-4 md:mt-0 shrink-0">
                       <ShieldAlert className="w-16 h-16 md:w-24 md:h-24 text-blue-400 mx-auto mb-2 md:mb-4" />
                       <h2 className="text-xl md:text-2xl text-blue-300 font-mono tracking-widest">H.R. 7521</h2>
                   </div>
 
-                  <h1 className="text-3xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-200 via-white to-blue-200 z-10 max-w-4xl leading-tight neon-text">
+                  <h1 className="text-3xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-200 via-white to-blue-200 z-10 max-w-4xl leading-tight neon-text shrink-0">
                       解構：美國國家安全的<br/>
                       <span className="text-blue-500">精準手術刀</span>
                   </h1>
 
-                  <p className="text-slate-400 text-base md:text-xl max-w-2xl z-10 leading-relaxed px-4">
+                  <p className="text-slate-400 text-base md:text-xl max-w-2xl z-10 leading-relaxed px-4 shrink-0">
                       互動式學習指南：深入剖析《保護美國人免受外國敵對勢力控制應用程式侵害法》。
                   </p>
 
-                  <Button onClick={onNext} size="lg" className="z-10 mt-8 animate-bounce w-full md:w-auto">
+                  <Button onClick={onNext} size="lg" className="z-10 mt-8 animate-bounce w-full md:w-auto shrink-0 mb-8">
                       開始解密
                   </Button>
-                  <div className="h-12 md:hidden"></div> {/* Spacer for mobile */}
               </div>
           );
       };
@@ -181,7 +185,7 @@
           const [selectedPath, setSelectedPath] = useState(null);
 
           return (
-              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto">
+              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto w-full">
                   <h2 className="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-3 shrink-0">
                       <Split className="text-blue-500 w-6 h-6 md:w-8 md:h-8" />
                       法案核心：兩條路
@@ -190,11 +194,11 @@
                       在美國市場，受指定的外國敵對勢力控制之應用程式只有兩個選擇。
                   </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 relative pb-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 relative pb-8 shrink-0">
                       <div 
                           onClick={() => setSelectedPath('divest')}
                           className={`
-                              cursor-pointer rounded-2xl border-2 p-6 md:p-8 flex flex-col items-center justify-center gap-4 md:gap-6 transition-all duration-300 glass-panel
+                              cursor-pointer rounded-2xl border-2 p-6 md:p-8 flex flex-col items-center justify-center gap-4 md:gap-6 transition-all duration-300 glass-panel min-h-[200px]
                               ${selectedPath === 'divest' 
                                   ? 'bg-emerald-900/40 border-emerald-500 scale-[1.02] md:scale-105 shadow-[0_0_30px_rgba(16,185,129,0.3)]' 
                                   : 'hover:border-slate-500 hover:bg-slate-800/80'}
@@ -217,7 +221,7 @@
                       <div 
                           onClick={() => setSelectedPath('prohibit')}
                           className={`
-                              cursor-pointer rounded-2xl border-2 p-6 md:p-8 flex flex-col items-center justify-center gap-4 md:gap-6 transition-all duration-300 glass-panel
+                              cursor-pointer rounded-2xl border-2 p-6 md:p-8 flex flex-col items-center justify-center gap-4 md:gap-6 transition-all duration-300 glass-panel min-h-[200px]
                               ${selectedPath === 'prohibit' 
                                   ? 'bg-red-900/40 border-red-500 scale-[1.02] md:scale-105 shadow-[0_0_30px_rgba(239,68,68,0.3)]' 
                                   : 'hover:border-slate-500 hover:bg-slate-800/80'}
@@ -258,14 +262,14 @@
           };
 
           return (
-              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto">
+              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto w-full">
                    <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-3 shrink-0">
                       <Timer className="text-blue-500 w-6 h-6 md:w-8 md:h-8" />
                       180 天倒數計時模擬
                   </h2>
 
-                  <div className="flex-1 flex flex-col justify-center items-center min-h-[400px]">
-                      <div className="w-full max-w-4xl bg-slate-800/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-slate-700 shadow-2xl relative overflow-hidden group mb-6">
+                  <div className="flex-1 flex flex-col justify-center items-center shrink-0">
+                      <div className="w-full max-w-4xl bg-slate-800/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-slate-700 shadow-2xl relative overflow-hidden group mb-6 shrink-0">
                           {/* Background Pulse */}
                           {days >= 180 && <div className="absolute inset-0 bg-red-500/10 animate-pulse z-0 pointer-events-none"></div>}
                           
@@ -314,7 +318,7 @@
                       </div>
 
                       {/* Manual Controls */}
-                      <div className="grid grid-cols-4 gap-2 w-full max-w-4xl">
+                      <div className="grid grid-cols-4 gap-2 w-full max-w-4xl pb-8">
                         <Button onClick={() => setDays(0)} variant="secondary" size="sm" className="text-xs md:text-sm">
                             Day 0
                         </Button>
@@ -336,30 +340,33 @@
       const TargetsSlide = () => {
           const [searchTerm, setSearchTerm] = useState('');
           const [scanResult, setScanResult] = useState(null);
+          const [key, setKey] = useState(0);
 
           const checkApp = () => {
               const term = searchTerm.toLowerCase().trim();
               if (!term) return;
               
+              setKey(prev => prev + 1); // trigger animation
+
               if (['tiktok', 'douyin', 'bytedance'].includes(term)) {
                   setScanResult({ type: 'banned', msg: '🚨 高風險：明確列為外國敵對勢力控制實體' });
               } else if (['capcut', 'lemon8', 'lark'].includes(term)) {
                   setScanResult({ type: 'warning', msg: '⚠️ 潛在風險：ByteDance 子公司或關聯企業' });
-              } else if (['facebook', 'instagram', 'youtube', 'x', 'twitter'].includes(term)) {
-                  setScanResult({ type: 'safe', msg: '✅ 安全：美國公司，非外國敵對勢力控制' });
+              } else if (['facebook', 'instagram', 'youtube', 'x', 'twitter', 'line'].includes(term)) {
+                  setScanResult({ type: 'safe', msg: '✅ 安全：美國或其他國家公司，非外國敵對勢力控制' });
               } else {
                   setScanResult({ type: 'unknown', msg: '❓ 未知/需審查：需確認是否受中、俄、伊、北韓控制' });
               }
           };
 
           return (
-              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto">
+              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto w-full">
                    <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-3 shrink-0">
                       <Network className="text-blue-500 w-6 h-6 md:w-8 md:h-8" />
                       目標掃描器
                   </h2>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 pb-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 pb-8 shrink-0">
                       <div className="space-y-6">
                           <div className="bg-slate-800 p-4 md:p-6 rounded-xl border border-slate-700">
                                <h3 className="text-lg md:text-xl font-bold mb-4 text-white">明確指名實體</h3>
@@ -411,7 +418,7 @@
                           </div>
 
                           {scanResult && (
-                              <div className={`p-4 rounded-xl border-l-4 animate-shake ${
+                              <div key={key} className={`p-4 rounded-xl border-l-4 animate-shake ${
                                   scanResult.type === 'banned' ? 'bg-red-900/30 border-red-500' :
                                   scanResult.type === 'warning' ? 'bg-yellow-900/30 border-yellow-500' :
                                   scanResult.type === 'safe' ? 'bg-emerald-900/30 border-emerald-500' :
@@ -442,7 +449,7 @@
           };
 
           return (
-              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto">
+              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto w-full">
                   <h2 className="text-2xl md:text-3xl font-bold mb-4 flex items-center gap-3 shrink-0">
                       <Scissors className="text-blue-500 w-6 h-6 md:w-8 md:h-8" />
                       互動：執行「合格剝離」
@@ -451,7 +458,7 @@
                       點擊連結線以切斷美國業務與外國敵對勢力的所有控制關係。
                   </p>
 
-                  <div className="flex-1 bg-slate-800/50 rounded-3xl border border-slate-700 p-4 md:p-8 relative flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 min-h-[400px]">
+                  <div className="flex-1 bg-slate-800/50 rounded-3xl border border-slate-700 p-4 md:p-8 relative flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 min-h-[400px] shrink-0">
                       
                       {/* US Business (Top on Mobile, Left on Desktop) */}
                       <div className="z-10 bg-blue-900/80 p-4 md:p-6 rounded-2xl border-2 border-blue-400 w-full md:w-48 text-center shadow-[0_0_20px_rgba(59,130,246,0.5)] shrink-0">
@@ -478,7 +485,7 @@
                                   `}
                               >
                                   {isActive && (
-                                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 text-slate-200 px-2 py-1 md:px-3 rounded-full text-[10px] md:text-xs font-bold border border-slate-600 whitespace-nowrap group-hover:bg-red-600 group-hover:text-white transition-colors z-20">
+                                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 text-slate-200 px-2 py-1 md:px-3 rounded-full text-[10px] md:text-xs font-bold border border-slate-600 whitespace-nowrap group-hover:bg-red-600 group-hover:text-white transition-colors z-20 pointer-events-none">
                                           {idx === 0 ? '股權' : idx === 1 ? '演算法' : '數據'}
                                       </div>
                                   )}
@@ -501,11 +508,11 @@
                   </div>
 
                   {allSevered ? (
-                      <div className="mt-4 md:mt-6 bg-emerald-600 text-white p-3 md:p-4 rounded-xl text-center font-bold text-base md:text-xl animate-bounce shadow-lg shadow-emerald-900/50 shrink-0">
+                      <div className="mt-4 md:mt-6 bg-emerald-600 text-white p-3 md:p-4 rounded-xl text-center font-bold text-base md:text-xl animate-bounce shadow-lg shadow-emerald-900/50 shrink-0 mb-8">
                           🎉 合格剝離完成！禁令解除。
                       </div>
                   ) : (
-                      <div className="mt-4 md:mt-6 text-center text-slate-500 text-sm md:text-base shrink-0">
+                      <div className="mt-4 md:mt-6 text-center text-slate-500 text-sm md:text-base shrink-0 mb-8">
                           點擊紅藍線條以切斷連結...
                       </div>
                   )}
@@ -517,13 +524,13 @@
           const [userCount, setUserCount] = useState(1000000);
           
           return (
-              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto">
+              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto w-full">
                    <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-3 shrink-0">
                       <Calculator className="text-blue-500 w-6 h-6 md:w-8 md:h-8" />
                       民事罰則計算機
                   </h2>
 
-                  <div className="bg-slate-900 p-6 md:p-8 rounded-2xl border border-slate-700 shadow-2xl flex flex-col justify-center max-w-4xl mx-auto w-full">
+                  <div className="bg-slate-900 p-6 md:p-8 rounded-2xl border border-slate-700 shadow-2xl flex flex-col justify-center max-w-4xl mx-auto w-full shrink-0">
                       <div className="flex flex-col md:flex-row justify-between md:items-end mb-8 gap-6 md:gap-0">
                           <div>
                               <label className="block text-sm font-medium text-slate-400 mb-2">
@@ -586,7 +593,7 @@
           const [activeTab, setActiveTab] = useState('review');
 
           return (
-              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto">
+              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto w-full">
                    <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-3 shrink-0">
                       <Scale className="text-blue-500 w-6 h-6 md:w-8 md:h-8" />
                       司法與權益
@@ -597,7 +604,7 @@
                       <button onClick={() => setActiveTab('rights')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-bold transition-all whitespace-nowrap ${activeTab === 'rights' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'}`}>用戶權益</button>
                   </div>
 
-                  <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-4 md:p-8 transition-all min-h-[300px]">
+                  <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-4 md:p-8 transition-all min-h-[300px] shrink-0">
                       {activeTab === 'review' ? (
                           <div className="space-y-6 animate-float">
                               <div className="flex items-start gap-4">
@@ -692,7 +699,7 @@
 
           if (completed) {
               return (
-                  <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-float overflow-y-auto">
+                  <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-float overflow-y-auto w-full">
                       <Award className={`w-32 h-32 mb-6 ${score === QUIZ_DATA.length ? 'text-yellow-400' : 'text-slate-500'}`} />
                       <h2 className="text-3xl md:text-4xl font-bold mb-4">測驗完成！</h2>
                       <p className="text-2xl text-slate-300 mb-8">
@@ -708,7 +715,7 @@
           const question = QUIZ_DATA[currentQuestion];
 
           return (
-              <div className="h-full flex flex-col max-w-3xl mx-auto p-4 md:p-12 overflow-y-auto">
+              <div className="h-full flex flex-col max-w-3xl mx-auto p-4 md:p-12 overflow-y-auto w-full">
                   <div className="flex justify-between items-center mb-6 md:mb-8 shrink-0">
                       <h2 className="text-xl md:text-2xl font-bold text-slate-200">知識檢定</h2>
                       <div className="text-slate-400 font-mono text-sm md:text-base">
@@ -757,7 +764,7 @@
                       )}
                   </div>
 
-                  <div className="flex justify-end mt-6 pb-6">
+                  <div className="flex justify-end mt-6 pb-8 shrink-0">
                       <Button 
                           onClick={handleNext} 
                           disabled={!showExplanation}
@@ -773,8 +780,8 @@
 
       const ConclusionSlide = () => {
           return (
-              <div className="h-full flex flex-col justify-center items-center p-4 md:p-8 text-center relative overflow-y-auto">
-                  <div className="bg-slate-800/80 p-6 md:p-10 rounded-3xl border border-slate-600 max-w-4xl backdrop-blur-md z-10 shadow-2xl my-auto">
+              <div className="h-full flex flex-col justify-center items-center p-4 md:p-8 text-center relative overflow-y-auto w-full">
+                  <div className="bg-slate-800/80 p-6 md:p-10 rounded-3xl border border-slate-600 max-w-4xl backdrop-blur-md z-10 shadow-2xl my-auto shrink-0">
                       <div className="flex justify-center mb-6">
                            <ShieldCheck className="w-16 h-16 md:w-24 md:h-24 text-blue-500 animate-pulse" />
                       </div>
@@ -830,7 +837,7 @@
         const progress = ((currentSlideIndex + 1) / slides.length) * 100;
 
         return (
-          <div className="h-screen w-screen flex flex-col bg-slate-900 text-slate-100 overflow-hidden relative">
+          <div className="h-[100dvh] w-screen flex flex-col bg-slate-900 text-slate-100 overflow-hidden relative">
             {/* Background Effects */}
             <div className="absolute inset-0 z-0 pointer-events-none" 
                style={{ 
@@ -860,7 +867,7 @@
               {slides.map((slide, index) => (
                 <div 
                   key={index}
-                  className={`absolute inset-0 transition-all duration-500 ease-in-out transform ${
+                  className={`absolute inset-0 transition-all duration-500 ease-in-out transform flex flex-col ${
                     index === currentSlideIndex 
                       ? 'translate-x-0 opacity-100 scale-100' 
                       : index < currentSlideIndex 
