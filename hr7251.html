@@ -2,7 +2,7 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>H.R. 7521 國家安全互動教材</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -13,6 +13,8 @@
         background-color: #0f172a;
         color: #f1f5f9;
         overflow: hidden; 
+        /* Prevent pull-to-refresh on mobile */
+        overscroll-behavior: none;
       }
       /* Custom Animations */
       @keyframes float {
@@ -39,10 +41,27 @@
       }
 
       /* Custom Scrollbar */
-      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar { width: 4px; }
       ::-webkit-scrollbar-track { background: #1e293b; }
       ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
       ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+      /* Mobile adjustments */
+      .touch-manipulation {
+        touch-action: manipulation;
+      }
+      
+      /* Range Input Reset */
+      input[type=range] {
+        -webkit-appearance: none; 
+        background: transparent; 
+      }
+      input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+      }
+      input[type=range]:focus {
+        outline: none;
+      }
     </style>
     <script type="importmap">
     {
@@ -53,8 +72,7 @@
       }
     }
     </script>
-  <link rel="stylesheet" href="/index.css">
-</head>
+  </head>
   <body>
     <div id="root"></div>
 
@@ -70,19 +88,7 @@
         ChevronRight, ChevronLeft, Search, Zap, Scissors
       } from 'lucide-react';
 
-      // --- Types ---
-      const SlideType = {
-          INTRO: 'INTRO',
-          ULTIMATUM: 'ULTIMATUM',
-          TIMELINE: 'TIMELINE',
-          TARGETS: 'TARGETS',
-          DIVESTITURE: 'DIVESTITURE',
-          ENFORCEMENT: 'ENFORCEMENT',
-          LEGAL_REVIEW: 'LEGAL_REVIEW',
-          QUIZ: 'QUIZ',
-          CONCLUSION: 'CONCLUSION'
-      };
-
+      // --- Constants ---
       const QUIZ_DATA = [
           {
               id: 1,
@@ -117,7 +123,7 @@
       // --- Components ---
 
       const Button = ({ children, variant = 'primary', size = 'md', className = '', ...props }) => {
-          const baseStyle = "font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 shadow-lg";
+          const baseStyle = "font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 shadow-lg touch-manipulation";
           const variants = {
               primary: "bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/50",
               secondary: "bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600",
@@ -143,29 +149,30 @@
 
       const IntroSlide = ({ onNext }) => {
           return (
-              <div className="flex flex-col items-center justify-center h-full text-center space-y-8 p-8 relative overflow-hidden">
+              <div className="flex flex-col items-center justify-center h-full text-center space-y-6 md:space-y-8 p-4 md:p-8 relative overflow-hidden overflow-y-auto">
                   <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
                       <div className="absolute top-10 left-10 w-32 h-32 border-2 border-blue-500 rounded-full animate-ping" />
                       <div className="absolute bottom-20 right-20 w-64 h-64 border border-slate-600 rounded-full" />
                   </div>
 
-                  <div className="z-10 bg-blue-500/10 p-6 rounded-2xl border border-blue-500/30 backdrop-blur-sm animate-float">
-                      <ShieldAlert className="w-24 h-24 text-blue-400 mx-auto mb-4" />
-                      <h2 className="text-2xl text-blue-300 font-mono tracking-widest">H.R. 7521</h2>
+                  <div className="z-10 bg-blue-500/10 p-4 md:p-6 rounded-2xl border border-blue-500/30 backdrop-blur-sm animate-float mt-8 md:mt-0">
+                      <ShieldAlert className="w-16 h-16 md:w-24 md:h-24 text-blue-400 mx-auto mb-2 md:mb-4" />
+                      <h2 className="text-xl md:text-2xl text-blue-300 font-mono tracking-widest">H.R. 7521</h2>
                   </div>
 
-                  <h1 className="text-4xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-200 via-white to-blue-200 z-10 max-w-4xl leading-tight neon-text">
+                  <h1 className="text-3xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-200 via-white to-blue-200 z-10 max-w-4xl leading-tight neon-text">
                       解構：美國國家安全的<br/>
                       <span className="text-blue-500">精準手術刀</span>
                   </h1>
 
-                  <p className="text-slate-400 text-lg md:text-xl max-w-2xl z-10 leading-relaxed">
+                  <p className="text-slate-400 text-base md:text-xl max-w-2xl z-10 leading-relaxed px-4">
                       互動式學習指南：深入剖析《保護美國人免受外國敵對勢力控制應用程式侵害法》。
                   </p>
 
-                  <Button onClick={onNext} size="lg" className="z-10 mt-8 animate-bounce">
+                  <Button onClick={onNext} size="lg" className="z-10 mt-8 animate-bounce w-full md:w-auto">
                       開始解密
                   </Button>
+                  <div className="h-12 md:hidden"></div> {/* Spacer for mobile */}
               </div>
           );
       };
@@ -174,32 +181,34 @@
           const [selectedPath, setSelectedPath] = useState(null);
 
           return (
-              <div className="h-full flex flex-col p-6 md:p-12">
-                  <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-                      <Split className="text-blue-500" />
+              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto">
+                  <h2 className="text-2xl md:text-3xl font-bold mb-2 flex items-center gap-3 shrink-0">
+                      <Split className="text-blue-500 w-6 h-6 md:w-8 md:h-8" />
                       法案核心：兩條路
                   </h2>
-                  <p className="text-slate-400 mb-8 text-lg">
+                  <p className="text-slate-400 mb-6 md:mb-8 text-base md:text-lg shrink-0">
                       在美國市場，受指定的外國敵對勢力控制之應用程式只有兩個選擇。
                   </p>
 
-                  <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 relative">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 relative pb-8">
                       <div 
                           onClick={() => setSelectedPath('divest')}
                           className={`
-                              cursor-pointer rounded-2xl border-2 p-8 flex flex-col items-center justify-center gap-6 transition-all duration-300 glass-panel
+                              cursor-pointer rounded-2xl border-2 p-6 md:p-8 flex flex-col items-center justify-center gap-4 md:gap-6 transition-all duration-300 glass-panel
                               ${selectedPath === 'divest' 
-                                  ? 'bg-emerald-900/40 border-emerald-500 scale-105 shadow-[0_0_30px_rgba(16,185,129,0.3)]' 
+                                  ? 'bg-emerald-900/40 border-emerald-500 scale-[1.02] md:scale-105 shadow-[0_0_30px_rgba(16,185,129,0.3)]' 
                                   : 'hover:border-slate-500 hover:bg-slate-800/80'}
                           `}
                       >
-                          <CheckCircle className={`w-24 h-24 transition-colors ${selectedPath === 'divest' ? 'text-emerald-400' : 'text-slate-600'}`} />
-                          <h3 className="text-2xl font-bold text-white">1. 剝離 (Divest)</h3>
-                          <p className="text-center text-slate-300">
-                              執行「合格剝離」，切斷與外國敵對勢力的控制關係。
-                          </p>
+                          <CheckCircle className={`w-16 h-16 md:w-24 md:h-24 transition-colors ${selectedPath === 'divest' ? 'text-emerald-400' : 'text-slate-600'}`} />
+                          <div className="text-center">
+                              <h3 className="text-xl md:text-2xl font-bold text-white mb-2">1. 剝離 (Divest)</h3>
+                              <p className="text-slate-300 text-sm md:text-base">
+                                  執行「合格剝離」，切斷與外國敵對勢力的控制關係。
+                              </p>
+                          </div>
                           {selectedPath === 'divest' && (
-                              <div className="mt-4 p-3 bg-emerald-500/20 rounded-lg text-emerald-200 text-sm font-bold animate-pulse">
+                              <div className="mt-2 p-3 bg-emerald-500/20 rounded-lg text-emerald-200 text-sm font-bold animate-pulse w-full text-center">
                                   ✅ 結果：可繼續在美營運
                               </div>
                           )}
@@ -208,19 +217,21 @@
                       <div 
                           onClick={() => setSelectedPath('prohibit')}
                           className={`
-                              cursor-pointer rounded-2xl border-2 p-8 flex flex-col items-center justify-center gap-6 transition-all duration-300 glass-panel
+                              cursor-pointer rounded-2xl border-2 p-6 md:p-8 flex flex-col items-center justify-center gap-4 md:gap-6 transition-all duration-300 glass-panel
                               ${selectedPath === 'prohibit' 
-                                  ? 'bg-red-900/40 border-red-500 scale-105 shadow-[0_0_30px_rgba(239,68,68,0.3)]' 
+                                  ? 'bg-red-900/40 border-red-500 scale-[1.02] md:scale-105 shadow-[0_0_30px_rgba(239,68,68,0.3)]' 
                                   : 'hover:border-slate-500 hover:bg-slate-800/80'}
                           `}
                       >
-                          <XCircle className={`w-24 h-24 transition-colors ${selectedPath === 'prohibit' ? 'text-red-400' : 'text-slate-600'}`} />
-                          <h3 className="text-2xl font-bold text-white">2. 禁止 (Prohibit)</h3>
-                          <p className="text-center text-slate-300">
-                              拒絕剝離或無法在期限內完成。
-                          </p>
+                          <XCircle className={`w-16 h-16 md:w-24 md:h-24 transition-colors ${selectedPath === 'prohibit' ? 'text-red-400' : 'text-slate-600'}`} />
+                          <div className="text-center">
+                              <h3 className="text-xl md:text-2xl font-bold text-white mb-2">2. 禁止 (Prohibit)</h3>
+                              <p className="text-slate-300 text-sm md:text-base">
+                                  拒絕剝離或無法在期限內完成。
+                              </p>
+                          </div>
                           {selectedPath === 'prohibit' && (
-                              <div className="mt-4 p-3 bg-red-500/20 rounded-lg text-red-200 text-sm font-bold animate-pulse">
+                              <div className="mt-2 p-3 bg-red-500/20 rounded-lg text-red-200 text-sm font-bold animate-pulse w-full text-center">
                                   🚫 結果：全面禁止在美服務
                               </div>
                           )}
@@ -234,63 +245,88 @@
           const [days, setDays] = useState(0);
 
           const getStatus = (d) => {
-              if (d === 0) return { text: "法案頒布 / 總統認定", color: "text-blue-400", icon: <Calendar /> };
-              if (d < 165) return { text: "訴訟挑戰期 (法案本身)", color: "text-purple-400", icon: <Scale /> };
-              if (d < 180) return { text: "剝離期窗口", color: "text-emerald-400", icon: <Timer /> };
-              return { text: "禁令生效", color: "text-red-500", icon: <AlertOctagon /> };
+              if (d === 0) return { text: "法案頒布 / 總統認定", color: "text-blue-400", icon: <Calendar className="w-5 h-5" /> };
+              if (d < 165) return { text: "訴訟挑戰期 (法案本身)", color: "text-purple-400", icon: <Scale className="w-5 h-5" /> };
+              if (d < 180) return { text: "剝離期窗口", color: "text-emerald-400", icon: <Timer className="w-5 h-5" /> };
+              return { text: "禁令生效", color: "text-red-500", icon: <AlertOctagon className="w-5 h-5" /> };
           };
 
           const status = getStatus(days);
 
+          const adjustDays = (delta) => {
+              setDays(prev => Math.min(185, Math.max(0, prev + delta)));
+          };
+
           return (
-              <div className="h-full flex flex-col p-6 md:p-12">
-                   <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-                      <Timer className="text-blue-500" />
+              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto">
+                   <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-3 shrink-0">
+                      <Timer className="text-blue-500 w-6 h-6 md:w-8 md:h-8" />
                       180 天倒數計時模擬
                   </h2>
 
-                  <div className="flex-1 flex flex-col justify-center items-center">
-                      <div className="w-full max-w-4xl bg-slate-800/80 backdrop-blur-xl rounded-3xl p-8 border border-slate-700 shadow-2xl relative overflow-hidden">
+                  <div className="flex-1 flex flex-col justify-center items-center min-h-[400px]">
+                      <div className="w-full max-w-4xl bg-slate-800/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-slate-700 shadow-2xl relative overflow-hidden group mb-6">
                           {/* Background Pulse */}
                           {days >= 180 && <div className="absolute inset-0 bg-red-500/10 animate-pulse z-0 pointer-events-none"></div>}
+                          
+                          <input 
+                              type="range" 
+                              min="0" 
+                              max="185" 
+                              value={days} 
+                              onChange={(e) => setDays(parseInt(e.target.value))}
+                              className="absolute inset-0 w-full h-full opacity-0 z-50 cursor-ew-resize"
+                              style={{ touchAction: 'none' }}
+                              aria-label="Timeline Slider"
+                          />
 
-                          <div className="relative z-10">
-                              <div className="flex justify-between items-center mb-12">
-                                  <div className="text-center opacity-70">Day 0</div>
-                                  <div className="flex-1 mx-6 h-6 bg-slate-900 rounded-full border border-slate-700 relative">
+                          <div className="relative z-10 pointer-events-none">
+                              <div className="flex justify-between items-center mb-12 text-sm md:text-base">
+                                  <div className="text-center opacity-70 w-16">Day 0</div>
+                                  <div className="flex-1 mx-3 md:mx-6 h-4 md:h-6 bg-slate-900 rounded-full border border-slate-700 relative">
                                        <div 
                                           className={`absolute top-0 left-0 h-full rounded-full transition-all duration-100 ${days >= 180 ? 'bg-red-500 shadow-[0_0_15px_#ef4444]' : 'bg-blue-500 shadow-[0_0_10px_#3b82f6]'}`}
                                           style={{ width: `${(days / 180) * 100}%` }}
                                        />
                                        <div 
-                                          className="absolute top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-lg cursor-grab active:cursor-grabbing hover:scale-110 transition-transform"
-                                          style={{ left: `calc(${(days / 180) * 100}% - 16px)` }}
+                                          className="absolute top-1/2 -translate-y-1/2 w-6 h-6 md:w-8 md:h-8 bg-white rounded-full shadow-lg transition-transform"
+                                          style={{ left: `calc(${(days / 180) * 100}% - 12px)` }}
                                        ></div>
                                   </div>
-                                  <div className="text-center text-red-400 font-bold">Day 180</div>
+                                  <div className="text-center text-red-400 font-bold w-16">Day 180</div>
                               </div>
 
                               <div className="text-center mb-8 space-y-4">
-                                  <div className="text-8xl font-black font-mono text-white tabular-nums tracking-tighter">
+                                  <div className="text-6xl md:text-8xl font-black font-mono text-white tabular-nums tracking-tighter">
                                       {days}
                                   </div>
-                                  <div className={`text-2xl font-bold flex items-center justify-center gap-3 ${status.color} transition-colors duration-300`}>
-                                      {status.icon} {status.text}
+                                  <div className={`text-lg md:text-2xl font-bold flex flex-col md:flex-row items-center justify-center gap-2 md:gap-3 ${status.color} transition-colors duration-300 min-h-[60px] md:min-h-0`}>
+                                      {status.icon} <span>{status.text}</span>
                                   </div>
                               </div>
 
-                              <input 
-                                  type="range" 
-                                  min="0" 
-                                  max="185" 
-                                  value={days} 
-                                  onChange={(e) => setDays(parseInt(e.target.value))}
-                                  className="w-full opacity-0 absolute inset-0 cursor-pointer h-32"
-                              />
-                              <p className="text-center text-slate-400 text-sm animate-bounce">
-                                  拖動滑桿查看不同階段
-                              </p>
+                              <div className="flex justify-center mt-8">
+                                 <p className="text-center text-slate-400 text-sm bg-slate-900/90 px-6 py-2 rounded-full border border-slate-600 shadow-lg backdrop-blur-sm">
+                                     ↔ 左右滑動或使用下方按鈕
+                                 </p>
+                              </div>
                           </div>
+                      </div>
+
+                      {/* Manual Controls */}
+                      <div className="grid grid-cols-4 gap-2 w-full max-w-4xl">
+                        <Button onClick={() => setDays(0)} variant="secondary" size="sm" className="text-xs md:text-sm">
+                            Day 0
+                        </Button>
+                        <Button onClick={() => adjustDays(-10)} variant="secondary" size="sm" className="text-xs md:text-sm">
+                            -10 天
+                        </Button>
+                        <Button onClick={() => adjustDays(10)} variant="secondary" size="sm" className="text-xs md:text-sm">
+                            +10 天
+                        </Button>
+                        <Button onClick={() => setDays(180)} variant="danger" size="sm" className="text-xs md:text-sm">
+                            Day 180
+                        </Button>
                       </div>
                   </div>
               </div>
@@ -317,50 +353,51 @@
           };
 
           return (
-              <div className="h-full flex flex-col p-6 md:p-12 overflow-y-auto">
-                   <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-                      <Network className="text-blue-500" />
+              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto">
+                   <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-3 shrink-0">
+                      <Network className="text-blue-500 w-6 h-6 md:w-8 md:h-8" />
                       目標掃描器
                   </h2>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 pb-8">
                       <div className="space-y-6">
-                          <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-                               <h3 className="text-xl font-bold mb-4 text-white">明確指名實體</h3>
+                          <div className="bg-slate-800 p-4 md:p-6 rounded-xl border border-slate-700">
+                               <h3 className="text-lg md:text-xl font-bold mb-4 text-white">明確指名實體</h3>
                                <div className="flex gap-4 items-center">
-                                  <div className="bg-slate-900 p-4 rounded-lg border border-blue-500/50 w-full text-center">
-                                      <div className="text-lg font-black text-blue-400">ByteDance</div>
+                                  <div className="bg-slate-900 p-3 md:p-4 rounded-lg border border-blue-500/50 w-full text-center">
+                                      <div className="text-base md:text-lg font-black text-blue-400">ByteDance</div>
                                       <div className="text-xs text-slate-400">字節跳動</div>
                                   </div>
                                   <div className="text-slate-500">➜</div>
-                                  <div className="bg-slate-900 p-4 rounded-lg border border-pink-500/50 w-full text-center">
-                                      <div className="text-lg font-black text-pink-500">TikTok</div>
+                                  <div className="bg-slate-900 p-3 md:p-4 rounded-lg border border-pink-500/50 w-full text-center">
+                                      <div className="text-base md:text-lg font-black text-pink-500">TikTok</div>
                                       <div className="text-xs text-slate-400">及子公司</div>
                                   </div>
                                </div>
                           </div>
 
-                          <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-                              <h3 className="text-xl font-bold mb-4 text-white">未來涵蓋標準</h3>
-                              <ul className="space-y-3 text-slate-300">
+                          <div className="bg-slate-800 p-4 md:p-6 rounded-xl border border-slate-700">
+                              <h3 className="text-lg md:text-xl font-bold mb-4 text-white">未來涵蓋標準</h3>
+                              <ul className="space-y-3 text-slate-300 text-sm md:text-base">
                                   <li className="flex items-center gap-2"><Users className="w-4 h-4 text-purple-400"/> 100萬+ 月活躍用戶 (MAU)</li>
                                   <li className="flex items-center gap-2"><Globe className="w-4 h-4 text-purple-400"/> 允許生成/分享/查看內容</li>
-                                  <li className="flex items-center gap-2"><Building className="w-4 h-4 text-red-400"/> 受外國敵對勢力 (CN, RU, IR, KP) 控制</li>
+                                  <li className="flex items-center gap-2"><Building className="w-4 h-4 text-red-400"/> 受外國敵對勢力控制</li>
+                                  <li className="pl-6 text-xs text-slate-500">(中國, 俄羅斯, 伊朗, 北韓)</li>
                               </ul>
                           </div>
                       </div>
 
                       {/* Interactive Scanner */}
-                      <div className="bg-slate-900 border border-slate-600 rounded-2xl p-8 flex flex-col shadow-2xl">
-                          <h3 className="text-xl font-bold mb-6 text-white flex items-center gap-2">
+                      <div className="bg-slate-900 border border-slate-600 rounded-2xl p-6 md:p-8 flex flex-col shadow-2xl">
+                          <h3 className="text-lg md:text-xl font-bold mb-6 text-white flex items-center gap-2">
                               <Search className="w-5 h-5" /> 
                               應用程式合規檢查
                           </h3>
                           <div className="relative mb-6">
                               <input 
                                   type="text" 
-                                  placeholder="輸入應用程式名稱 (例: TikTok)" 
-                                  className="w-full bg-slate-800 border-2 border-slate-600 rounded-lg p-4 text-white focus:border-blue-500 outline-none transition-colors"
+                                  placeholder="輸入 App (例: TikTok)" 
+                                  className="w-full bg-slate-800 border-2 border-slate-600 rounded-lg p-3 md:p-4 text-white focus:border-blue-500 outline-none transition-colors"
                                   value={searchTerm}
                                   onChange={(e) => setSearchTerm(e.target.value)}
                                   onKeyDown={(e) => e.key === 'Enter' && checkApp()}
@@ -380,7 +417,7 @@
                                   scanResult.type === 'safe' ? 'bg-emerald-900/30 border-emerald-500' :
                                   'bg-slate-800 border-slate-500'
                               }`}>
-                                  <p className="font-bold text-white text-lg">{scanResult.msg}</p>
+                                  <p className="font-bold text-white text-base md:text-lg">{scanResult.msg}</p>
                               </div>
                           )}
 
@@ -405,68 +442,71 @@
           };
 
           return (
-              <div className="h-full flex flex-col p-6 md:p-12">
-                  <h2 className="text-3xl font-bold mb-4 flex items-center gap-3">
-                      <Scissors className="text-blue-500" />
-                      互動遊戲：執行「合格剝離」
+              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto">
+                  <h2 className="text-2xl md:text-3xl font-bold mb-4 flex items-center gap-3 shrink-0">
+                      <Scissors className="text-blue-500 w-6 h-6 md:w-8 md:h-8" />
+                      互動：執行「合格剝離」
                   </h2>
-                  <p className="text-slate-400 mb-8">
-                      點擊下方的連線以切斷美國業務與外國敵對勢力的所有控制與營運關係。
+                  <p className="text-slate-400 mb-6 md:mb-8 text-sm md:text-base shrink-0">
+                      點擊連結線以切斷美國業務與外國敵對勢力的所有控制關係。
                   </p>
 
-                  <div className="flex-1 bg-slate-800/50 rounded-3xl border border-slate-700 p-8 relative flex flex-col md:flex-row items-center justify-between overflow-hidden">
+                  <div className="flex-1 bg-slate-800/50 rounded-3xl border border-slate-700 p-4 md:p-8 relative flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0 min-h-[400px]">
                       
-                      {/* Left: US Business */}
-                      <div className="z-10 bg-blue-900/80 p-6 rounded-2xl border-2 border-blue-400 w-48 text-center shadow-[0_0_20px_rgba(59,130,246,0.5)]">
-                          <Building className="w-12 h-12 mx-auto text-blue-300 mb-2" />
+                      {/* US Business (Top on Mobile, Left on Desktop) */}
+                      <div className="z-10 bg-blue-900/80 p-4 md:p-6 rounded-2xl border-2 border-blue-400 w-full md:w-48 text-center shadow-[0_0_20px_rgba(59,130,246,0.5)] shrink-0">
+                          <Building className="w-8 h-8 md:w-12 md:h-12 mx-auto text-blue-300 mb-2" />
                           <div className="font-bold text-white">美國業務</div>
                           <div className="text-xs text-blue-200">US Operations</div>
                       </div>
 
-                      {/* Middle: Connections Area */}
-                      <div className="flex-1 h-full flex flex-col justify-center items-center gap-8 relative px-12 w-full">
+                      {/* Connections Area (Vertical wires on Mobile, Horizontal on Desktop) */}
+                      <div className="flex-1 flex md:flex-col flex-row justify-center items-center gap-6 md:gap-8 relative px-4 md:px-12 w-full h-full md:h-auto">
                           {connections.map((isActive, idx) => (
                               <div 
                                   key={idx} 
                                   onClick={() => isActive && cutConnection(idx)}
                                   className={`
-                                      w-full h-4 rounded-full relative cursor-pointer group transition-all duration-300
+                                      cursor-pointer group transition-all duration-300 relative
+                                      /* Mobile: Vertical Bar */
+                                      w-4 h-full rounded-full
+                                      /* Desktop: Horizontal Bar */
+                                      md:w-full md:h-4
                                       ${isActive 
-                                          ? 'bg-gradient-to-r from-blue-500 to-red-500 hover:scale-105 shadow-lg' 
+                                          ? 'bg-gradient-to-b md:bg-gradient-to-r from-blue-500 to-red-500 hover:scale-110 shadow-lg' 
                                           : 'bg-slate-700 opacity-30 pointer-events-none'}
                                   `}
                               >
                                   {isActive && (
-                                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 text-slate-200 px-3 py-1 rounded-full text-xs font-bold border border-slate-600 group-hover:bg-red-600 group-hover:text-white transition-colors">
-                                          {idx === 0 ? '股權控制' : idx === 1 ? '演算法合作' : '數據共享'}
+                                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 text-slate-200 px-2 py-1 md:px-3 rounded-full text-[10px] md:text-xs font-bold border border-slate-600 whitespace-nowrap group-hover:bg-red-600 group-hover:text-white transition-colors z-20">
+                                          {idx === 0 ? '股權' : idx === 1 ? '演算法' : '數據'}
                                       </div>
                                   )}
                                   {!isActive && (
-                                      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-red-500 font-bold text-xl rotate-12">
-                                          已切斷
+                                      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-red-500 font-bold text-xl md:rotate-12 whitespace-nowrap">
+                                          ❌
                                       </div>
                                   )}
                               </div>
                           ))}
                       </div>
 
-                      {/* Right: Foreign Adversary */}
-                      <div className={`z-10 p-6 rounded-2xl border-2 w-48 text-center transition-all duration-500 ${allSevered ? 'bg-slate-800 border-slate-600 opacity-50 grayscale' : 'bg-red-900/80 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]'}`}>
-                          <Globe className="w-12 h-12 mx-auto text-red-300 mb-2" />
+                      {/* Foreign Adversary (Bottom on Mobile, Right on Desktop) */}
+                      <div className={`z-10 p-4 md:p-6 rounded-2xl border-2 w-full md:w-48 text-center transition-all duration-500 shrink-0 ${allSevered ? 'bg-slate-800 border-slate-600 opacity-50 grayscale' : 'bg-red-900/80 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.5)]'}`}>
+                          <Globe className="w-8 h-8 md:w-12 md:h-12 mx-auto text-red-300 mb-2" />
                           <div className="font-bold text-white">外國敵對勢力</div>
                           <div className="text-xs text-red-200">Foreign Adversary</div>
                       </div>
 
                   </div>
 
-                  {allSevered && (
-                      <div className="mt-6 bg-emerald-600 text-white p-4 rounded-xl text-center font-bold text-xl animate-bounce shadow-lg shadow-emerald-900/50">
+                  {allSevered ? (
+                      <div className="mt-4 md:mt-6 bg-emerald-600 text-white p-3 md:p-4 rounded-xl text-center font-bold text-base md:text-xl animate-bounce shadow-lg shadow-emerald-900/50 shrink-0">
                           🎉 合格剝離完成！禁令解除。
                       </div>
-                  )}
-                  {!allSevered && (
-                      <div className="mt-6 text-center text-slate-500">
-                          還有連結尚未切斷...
+                  ) : (
+                      <div className="mt-4 md:mt-6 text-center text-slate-500 text-sm md:text-base shrink-0">
+                          點擊紅藍線條以切斷連結...
                       </div>
                   )}
               </div>
@@ -477,27 +517,27 @@
           const [userCount, setUserCount] = useState(1000000);
           
           return (
-              <div className="h-full flex flex-col p-6 md:p-12 overflow-y-auto">
-                   <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-                      <Calculator className="text-blue-500" />
+              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto">
+                   <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-3 shrink-0">
+                      <Calculator className="text-blue-500 w-6 h-6 md:w-8 md:h-8" />
                       民事罰則計算機
                   </h2>
 
-                  <div className="bg-slate-900 p-8 rounded-2xl border border-slate-700 shadow-2xl flex flex-col justify-center max-w-4xl mx-auto w-full">
-                      <div className="flex justify-between items-end mb-8">
+                  <div className="bg-slate-900 p-6 md:p-8 rounded-2xl border border-slate-700 shadow-2xl flex flex-col justify-center max-w-4xl mx-auto w-full">
+                      <div className="flex flex-col md:flex-row justify-between md:items-end mb-8 gap-6 md:gap-0">
                           <div>
                               <label className="block text-sm font-medium text-slate-400 mb-2">
                                   假設美國用戶數量
                               </label>
-                              <div className="text-3xl font-bold text-white font-mono">
+                              <div className="text-2xl md:text-3xl font-bold text-white font-mono break-all">
                                   {userCount.toLocaleString()} <span className="text-sm text-slate-500">Users</span>
                               </div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-left md:text-right">
                               <label className="block text-sm font-medium text-slate-400 mb-2">
                                   預估罰款 (每用戶 $5,000)
                               </label>
-                              <div className="text-4xl md:text-5xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-yellow-400">
+                              <div className="text-3xl md:text-5xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-yellow-400 break-all">
                                   ${(userCount * 5000).toLocaleString()}
                               </div>
                           </div>
@@ -511,7 +551,8 @@
                               step="1000"
                               value={userCount}
                               onChange={(e) => setUserCount(parseInt(e.target.value))}
-                              className="w-full h-4 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400"
+                              style={{ touchAction: 'pan-y' }}
+                              className="w-full h-4 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400 touch-manipulation relative z-20"
                           />
                           <div className="flex justify-between text-xs text-slate-500 mt-2 font-mono">
                               <span>1K</span>
@@ -522,14 +563,14 @@
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-lg flex items-center gap-4">
-                              <div className="bg-red-500/20 p-2 rounded-full"><UserX className="text-red-400" /></div>
+                              <div className="bg-red-500/20 p-2 rounded-full shrink-0"><UserX className="text-red-400" /></div>
                               <div>
                                   <div className="font-bold text-red-200">違反禁令</div>
                                   <div className="text-xs text-red-300">每位用戶 $5,000</div>
                               </div>
                           </div>
                           <div className="p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg flex items-center gap-4">
-                              <div className="bg-yellow-500/20 p-2 rounded-full"><Database className="text-yellow-400" /></div>
+                              <div className="bg-yellow-500/20 p-2 rounded-full shrink-0"><Database className="text-yellow-400" /></div>
                               <div>
                                   <div className="font-bold text-yellow-200">違反數據可攜</div>
                                   <div className="text-xs text-yellow-300">每位用戶 $500</div>
@@ -545,54 +586,54 @@
           const [activeTab, setActiveTab] = useState('review');
 
           return (
-              <div className="h-full flex flex-col p-6 md:p-12">
-                   <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-                      <Scale className="text-blue-500" />
-                      司法審查與用戶權益
+              <div className="h-full flex flex-col p-4 md:p-12 overflow-y-auto">
+                   <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-3 shrink-0">
+                      <Scale className="text-blue-500 w-6 h-6 md:w-8 md:h-8" />
+                      司法與權益
                   </h2>
 
-                  <div className="flex gap-4 mb-6">
-                      <button onClick={() => setActiveTab('review')} className={`px-4 py-2 rounded-lg font-bold transition-all ${activeTab === 'review' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'}`}>司法審查</button>
-                      <button onClick={() => setActiveTab('rights')} className={`px-4 py-2 rounded-lg font-bold transition-all ${activeTab === 'rights' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'}`}>用戶權益</button>
+                  <div className="flex gap-2 md:gap-4 mb-6 shrink-0 overflow-x-auto pb-2">
+                      <button onClick={() => setActiveTab('review')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-bold transition-all whitespace-nowrap ${activeTab === 'review' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'}`}>司法審查</button>
+                      <button onClick={() => setActiveTab('rights')} className={`flex-1 md:flex-none px-4 py-2 rounded-lg font-bold transition-all whitespace-nowrap ${activeTab === 'rights' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'}`}>用戶權益</button>
                   </div>
 
-                  <div className="flex-1 bg-slate-800/50 border border-slate-700 rounded-2xl p-8 transition-all">
+                  <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-4 md:p-8 transition-all min-h-[300px]">
                       {activeTab === 'review' ? (
                           <div className="space-y-6 animate-float">
                               <div className="flex items-start gap-4">
-                                  <Building className="w-12 h-12 text-blue-400 shrink-0" />
+                                  <Building className="w-10 h-10 md:w-12 md:h-12 text-blue-400 shrink-0" />
                                   <div>
-                                      <h3 className="text-xl font-bold text-white">專屬管轄法院</h3>
-                                      <p className="text-slate-300 mt-2">僅限 <strong>美國哥倫比亞特區聯邦巡迴上訴法院</strong>。</p>
+                                      <h3 className="text-lg md:text-xl font-bold text-white">專屬管轄法院</h3>
+                                      <p className="text-slate-300 mt-2 text-sm md:text-base">僅限 <strong>美國哥倫比亞特區聯邦巡迴上訴法院</strong>。</p>
                                   </div>
                               </div>
                               <hr className="border-slate-700" />
-                              <div className="grid grid-cols-2 gap-4">
-                                  <div className="bg-slate-900 p-4 rounded-xl border border-slate-600">
-                                      <div className="text-3xl font-black text-white mb-1">165 天</div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div className="bg-slate-900 p-4 rounded-xl border border-slate-600 flex items-center md:block gap-4">
+                                      <div className="text-2xl md:text-3xl font-black text-white mb-1">165 天</div>
                                       <div className="text-sm text-slate-400">挑戰法案本身</div>
                                   </div>
-                                  <div className="bg-slate-900 p-4 rounded-xl border border-slate-600">
-                                      <div className="text-3xl font-black text-white mb-1">90 天</div>
+                                  <div className="bg-slate-900 p-4 rounded-xl border border-slate-600 flex items-center md:block gap-4">
+                                      <div className="text-2xl md:text-3xl font-black text-white mb-1">90 天</div>
                                       <div className="text-sm text-slate-400">挑戰具體行動</div>
                                   </div>
                               </div>
                           </div>
                       ) : (
                           <div className="space-y-6 animate-float">
-                              <div className="bg-emerald-900/20 p-6 rounded-xl border border-emerald-500/30">
-                                  <h3 className="text-xl font-bold text-emerald-200 mb-4 flex items-center gap-2">
+                              <div className="bg-emerald-900/20 p-4 md:p-6 rounded-xl border border-emerald-500/30">
+                                  <h3 className="text-lg md:text-xl font-bold text-emerald-200 mb-2 md:mb-4 flex items-center gap-2">
                                       <Download className="w-5 h-5" /> 數據可攜權
                                   </h3>
-                                  <p className="text-slate-300">
+                                  <p className="text-slate-300 text-sm md:text-base">
                                       禁令生效前，用戶有權要求下載所有數據（貼文、照片、影片）。必須以<strong>機器可讀格式</strong>提供。
                                   </p>
                               </div>
-                              <div className="bg-purple-900/20 p-6 rounded-xl border border-purple-500/30">
-                                  <h3 className="text-xl font-bold text-purple-200 mb-4 flex items-center gap-2">
+                              <div className="bg-purple-900/20 p-4 md:p-6 rounded-xl border border-purple-500/30">
+                                  <h3 className="text-lg md:text-xl font-bold text-purple-200 mb-2 md:mb-4 flex items-center gap-2">
                                       <Shield className="w-5 h-5" /> 個人豁免
                                   </h3>
-                                  <p className="text-slate-300">
+                                  <p className="text-slate-300 text-sm md:text-base">
                                       法律明確規定，<strong>不可起訴個人使用者</strong>。執法對象僅限於提供服務的實體。
                                   </p>
                               </div>
@@ -651,13 +692,13 @@
 
           if (completed) {
               return (
-                  <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-float">
+                  <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-float overflow-y-auto">
                       <Award className={`w-32 h-32 mb-6 ${score === QUIZ_DATA.length ? 'text-yellow-400' : 'text-slate-500'}`} />
-                      <h2 className="text-4xl font-bold mb-4">測驗完成！</h2>
+                      <h2 className="text-3xl md:text-4xl font-bold mb-4">測驗完成！</h2>
                       <p className="text-2xl text-slate-300 mb-8">
                           你的得分：<span className="text-blue-400 font-bold">{score}</span> / {QUIZ_DATA.length}
                       </p>
-                      <Button onClick={() => window.location.reload()} variant="secondary">
+                      <Button onClick={() => window.location.reload()} variant="secondary" className="w-full md:w-auto">
                           <RotateCcw className="w-4 h-4 mr-2" /> 重新開始
                       </Button>
                   </div>
@@ -667,20 +708,20 @@
           const question = QUIZ_DATA[currentQuestion];
 
           return (
-              <div className="h-full flex flex-col max-w-3xl mx-auto p-6 md:p-12">
-                  <div className="flex justify-between items-center mb-8">
-                      <h2 className="text-2xl font-bold text-slate-200">知識檢定</h2>
-                      <div className="text-slate-400 font-mono">
+              <div className="h-full flex flex-col max-w-3xl mx-auto p-4 md:p-12 overflow-y-auto">
+                  <div className="flex justify-between items-center mb-6 md:mb-8 shrink-0">
+                      <h2 className="text-xl md:text-2xl font-bold text-slate-200">知識檢定</h2>
+                      <div className="text-slate-400 font-mono text-sm md:text-base">
                           Q {currentQuestion + 1} / {QUIZ_DATA.length}
                       </div>
                   </div>
 
-                  <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-lg flex-1">
-                      <h3 className="text-xl md:text-2xl font-bold mb-8 text-white leading-relaxed">
+                  <div className="bg-slate-800 p-4 md:p-8 rounded-2xl border border-slate-700 shadow-lg shrink-0">
+                      <h3 className="text-lg md:text-2xl font-bold mb-6 md:mb-8 text-white leading-relaxed">
                           {question.question}
                       </h3>
 
-                      <div className="space-y-4">
+                      <div className="space-y-3 md:space-y-4">
                           {question.options.map((option, idx) => {
                               const isSelected = selectedOption === idx;
                               const isCorrect = idx === question.correctIndex;
@@ -697,11 +738,11 @@
                                       key={idx}
                                       onClick={() => handleOptionSelect(idx)}
                                       disabled={showExplanation}
-                                      className={`w-full p-4 rounded-xl border-2 text-left transition-all flex justify-between items-center ${buttonStyle}`}
+                                      className={`w-full p-4 rounded-xl border-2 text-left transition-all flex justify-between items-center text-sm md:text-base touch-manipulation ${buttonStyle}`}
                                   >
                                       <span>{option}</span>
                                       {showState && (
-                                          isCorrect ? <Check className="text-emerald-400" /> : (isSelected && <X className="text-red-400" />)
+                                          isCorrect ? <Check className="text-emerald-400 w-5 h-5" /> : (isSelected && <X className="text-red-400 w-5 h-5" />)
                                       )}
                                   </button>
                               );
@@ -709,18 +750,19 @@
                       </div>
 
                       {showExplanation && (
-                          <div className="mt-8 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg animate-fade-in">
+                          <div className="mt-6 md:mt-8 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg animate-fade-in">
                               <div className="font-bold text-blue-300 mb-1">解析：</div>
                               <p className="text-slate-300 text-sm">{question.explanation}</p>
                           </div>
                       )}
                   </div>
 
-                  <div className="flex justify-end mt-6">
+                  <div className="flex justify-end mt-6 pb-6">
                       <Button 
                           onClick={handleNext} 
                           disabled={!showExplanation}
                           variant={showExplanation ? "primary" : "secondary"}
+                          className="w-full md:w-auto"
                       >
                           {currentQuestion < QUIZ_DATA.length - 1 ? "下一題" : "查看結果"}
                       </Button>
@@ -731,17 +773,17 @@
 
       const ConclusionSlide = () => {
           return (
-              <div className="h-full flex flex-col justify-center items-center p-8 text-center relative">
-                  <div className="bg-slate-800/80 p-10 rounded-3xl border border-slate-600 max-w-4xl backdrop-blur-md z-10 shadow-2xl">
+              <div className="h-full flex flex-col justify-center items-center p-4 md:p-8 text-center relative overflow-y-auto">
+                  <div className="bg-slate-800/80 p-6 md:p-10 rounded-3xl border border-slate-600 max-w-4xl backdrop-blur-md z-10 shadow-2xl my-auto">
                       <div className="flex justify-center mb-6">
-                           <ShieldCheck className="w-24 h-24 text-blue-500 animate-pulse" />
+                           <ShieldCheck className="w-16 h-16 md:w-24 md:h-24 text-blue-500 animate-pulse" />
                       </div>
                       
-                      <h2 className="text-3xl font-bold text-white mb-6">
-                          H.R. 7521 確立了數位國安新典範
+                      <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 leading-tight">
+                          H.R. 7521 確立了<br className="md:hidden" />數位國安新典範
                       </h2>
 
-                      <p className="text-slate-300 italic text-xl mb-8">
+                      <p className="text-slate-300 italic text-lg md:text-xl mb-8">
                           「總統認定 + 180 天剝離通牒」
                       </p>
 
@@ -798,8 +840,8 @@
             </div>
 
             {/* Header */}
-            <header className="h-16 border-b border-slate-700 bg-slate-900/90 backdrop-blur-md flex items-center justify-between px-6 z-50">
-              <div className="font-bold text-lg tracking-wider text-blue-400 flex items-center gap-2">
+            <header className="h-14 md:h-16 border-b border-slate-700 bg-slate-900/90 backdrop-blur-md flex items-center justify-between px-4 md:px-6 z-50 shrink-0">
+              <div className="font-bold text-base md:text-lg tracking-wider text-blue-400 flex items-center gap-2">
                  <Shield className="w-5 h-5" />
                  H.R. 7521 <span className="text-slate-500 text-sm hidden sm:inline">Interactive</span>
               </div>
@@ -807,7 +849,7 @@
                  <span className="text-sm text-slate-400 font-mono hidden sm:inline">
                    {currentSlideIndex + 1} / {slides.length}
                  </span>
-                 <div className="w-32 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                 <div className="w-24 md:w-32 h-1.5 bg-slate-800 rounded-full overflow-hidden">
                    <div className="h-full bg-blue-500 transition-all duration-500 ease-out" style={{ width: `${progress}%` }}></div>
                  </div>
               </div>
@@ -833,25 +875,25 @@
             </main>
 
             {/* Footer */}
-            <footer className="h-20 border-t border-slate-700 bg-slate-900/90 backdrop-blur-md flex items-center justify-between px-6 z-50">
+            <footer className="h-16 md:h-20 border-t border-slate-700 bg-slate-900/90 backdrop-blur-md flex items-center justify-between px-4 md:px-6 z-50 shrink-0 pb-safe">
               <button 
                 onClick={prevSlide}
                 disabled={currentSlideIndex === 0}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-300 font-bold"
+                className="flex items-center gap-2 px-3 py-2 md:px-4 rounded-lg hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-300 font-bold text-sm md:text-base"
               >
-                <ChevronLeft className="w-5 h-5" /> <span className="hidden sm:inline">上一頁</span>
+                <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" /> <span className="hidden sm:inline">上一頁</span>
               </button>
 
-              <div className="font-bold text-slate-300 text-sm md:text-base">
+              <div className="font-bold text-slate-300 text-sm md:text-base truncate max-w-[150px] md:max-w-none text-center">
                   {slides[currentSlideIndex].title}
               </div>
 
               <button 
                 onClick={nextSlide}
                 disabled={currentSlideIndex === slides.length - 1}
-                className="flex items-center gap-2 px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-900/50 font-bold"
+                className="flex items-center gap-2 px-4 py-2 md:px-6 rounded-lg bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-900/50 font-bold text-sm md:text-base"
               >
-                <span className="hidden sm:inline">{currentSlideIndex === slides.length - 1 ? '完成' : '下一頁'}</span> <ChevronRight className="w-5 h-5" />
+                <span className="hidden sm:inline">{currentSlideIndex === slides.length - 1 ? '完成' : '下一頁'}</span> <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
               </button>
             </footer>
           </div>
@@ -861,6 +903,5 @@
       const root = createRoot(document.getElementById('root'));
       root.render(<App />);
     </script>
-  <script type="module" src="/index.tsx"></script>
-</body>
+  </body>
 </html>
