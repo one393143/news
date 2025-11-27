@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>聚餐點名與分帳表</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM (UMD for max compatibility) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel (to compile JSX in browser) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        /* Custom Checkbox */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #68D391;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #68D391;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- Load Google GenAI SDK as a module and attach to window -->
+    <script type="module">
+        import { GoogleGenAI } from "https://esm.sh/@google/genai@0.1.1";
+        window.GoogleGenAI = GoogleGenAI;
+    </script>
+
+    <script type="text/babel">
+        // Access React globals
+        const { useState, useEffect, useMemo, useRef } = React;
+
+        // --- Icons (Inline SVGs to avoid dependency issues) ---
+        const Icons = {
+            Plus: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M5 12h14"/><path d="M12 5v14"/></svg>,
+            Check: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="20 6 9 17 4 12"/></svg>,
+            X: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
+            Trash2: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>,
+            Edit2: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
+            Sparkles: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 3v4"/><path d="M3 5h4"/><path d="M3 9h4"/></svg>,
+            Banknote: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>,
+            Share2: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>,
+            Copy: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>,
+            UserCheck: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>,
+            UserX: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" x2="22" y1="8" y2="13"/><line x1="22" x2="17" y1="8" y2="13"/></svg>
+        };
+
+        // --- Helper: API Key ---
+        const getApiKey = () => {
+            return localStorage.getItem('gemini_api_key') || '';
+        };
+
+        // --- Component: Modal ---
+        const Modal = ({ isOpen, onClose, title, children }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-fade-in p-0 sm:p-4">
+                    <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl flex flex-col max-h-[90vh]">
+                        <div className="flex justify-between items-center p-4 border-b border-slate-100">
+                            <h3 className="font-bold text-lg text-slate-800">{title}</h3>
+                            <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-500">
+                                <Icons.X size={20} />
+                            </button>
+                        </div>
+                        <div className="overflow-y-auto p-4">
+                            {children}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- Component: Report View ---
+        const ReportView = ({ stats, attendees }) => {
+            const generateReport = () => {
+                const date = new Date().toLocaleDateString('zh-TW');
+                const perPerson = stats.perPersonCost;
+                
+                const paidList = attendees.filter(a => a.isPresent && a.hasPaid);
+                const unpaidList = attendees.filter(a => a.isPresent && !a.hasPaid);
+                
+                let text = `📅 聚餐報表 (${date})\n`;
+                text += `───────────────\n`;
+                text += `💰 總餐費 : $${stats.totalBill.toLocaleString()}\n`;
+                if(stats.publicFund > 0) text += `🏦 公積金 : -$${stats.publicFund.toLocaleString()}\n`;
+                text += `🧾 應付總額: $${stats.effectiveBill.toLocaleString()}\n`;
+                text += `👥 分攤人數: ${stats.presentCount} 人\n`;
+                text += `👉 每人應付: $${perPerson.toLocaleString()}\n`;
+                text += `───────────────\n`;
+                
+                if (unpaidList.length > 0) {
+                    text += `❌ 未付款 (${unpaidList.length}):\n`;
+                    unpaidList.forEach(p => text += `  - ${p.name}\n`);
+                    text += `\n`;
+                }
+                
+                if (paidList.length > 0) {
+                    text += `✅ 已付款 (${paidList.length}):\n`;
+                    paidList.forEach(p => text += `  - ${p.name}\n`);
+                    text += `\n`;
+                }
+
+                const details = attendees.filter(a => a.isPresent && (a.vision || a.remarks));
+                if (details.length > 0) {
+                    text += `📝 備註與願景:\n`;
+                    details.forEach(p => {
+                        text += `• ${p.name}`;
+                        if(p.vision) text += ` [願] ${p.vision}`;
+                        if(p.remarks) text += ` (${p.remarks})`;
+                        text += `\n`;
+                    });
+                }
+                
+                return text;
+            };
+
+            const reportText = generateReport();
+            const [copied, setCopied] = useState(false);
+
+            const handleCopy = () => {
+                navigator.clipboard.writeText(reportText).then(() => {
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                });
+            };
+
+            return (
+                <div className="space-y-4">
+                    <textarea 
+                        readOnly 
+                        value={reportText} 
+                        className="w-full h-64 p-3 text-sm font-mono bg-slate-50 border rounded-lg resize-none focus:outline-none"
+                    />
+                    <button 
+                        onClick={handleCopy}
+                        className={`w-full py-3 rounded-xl font-bold text-white flex justify-center items-center gap-2 ${copied ? 'bg-emerald-500' : 'bg-indigo-600 active:scale-95 transition-transform'}`}
+                    >
+                        {copied ? <><Icons.Check size={18}/> 已複製</> : <><Icons.Copy size={18}/> 複製完整報表</>}
+                    </button>
+                </div>
+            );
+        };
+
+        // --- Main App Component ---
+        const App = () => {
+            // Data State
+            const [attendees, setAttendees] = useState(() => {
+                try {
+                    return JSON.parse(localStorage.getItem('dinner_v3_attendees')) || [
+                        { id: '1', name: '智明', isPresent: true, hasPaid: false, vision: '', remarks: '發起人' },
+                        { id: '2', name: '秦昌慈', isPresent: true, hasPaid: false, vision: '', remarks: '負責點名' }
+                    ];
+                } catch { return []; }
+            });
+            const [totalBill, setTotalBill] = useState(() => parseInt(localStorage.getItem('dinner_v3_bill') || '0'));
+            const [publicFund, setPublicFund] = useState(() => parseInt(localStorage.getItem('dinner_v3_fund') || '0'));
+
+            // UI State
+            const [modalMode, setModalMode] = useState(null); // 'edit' | 'add' | 'report'
+            const [editingId, setEditingId] = useState(null);
+            
+            // Edit Form State
+            const [formData, setFormData] = useState({ name: '', vision: '', remarks: '', hasPaid: false });
+            const [isGenerating, setIsGenerating] = useState(false);
+
+            // Persistence
+            useEffect(() => { localStorage.setItem('dinner_v3_attendees', JSON.stringify(attendees)); }, [attendees]);
+            useEffect(() => { localStorage.setItem('dinner_v3_bill', totalBill); }, [totalBill]);
+            useEffect(() => { localStorage.setItem('dinner_v3_fund', publicFund); }, [publicFund]);
+
+            // Calculations
+            const stats = useMemo(() => {
+                const presentList = attendees.filter(a => a.isPresent);
+                const presentCount = presentList.length;
+                const paidList = presentList.filter(a => a.isPresent && a.hasPaid);
+                const effectiveBill = Math.max(0, totalBill - publicFund);
+                const perPersonCost = presentCount > 0 ? Math.ceil(effectiveBill / presentCount) : 0;
+                
+                return {
+                    presentCount,
+                    paidCount: paidList.length,
+                    totalBill,
+                    publicFund,
+                    effectiveBill,
+                    perPersonCost,
+                    collected: paidList.length * perPersonCost
+                };
+            }, [attendees, totalBill, publicFund]);
+
+            // Handlers
+            const openAdd = () => {
+                setFormData({ name: '', vision: '', remarks: '', hasPaid: false });
+                setEditingId(null);
+                setModalMode('add');
+            };
+
+            const openEdit = (person) => {
+                setFormData({ ...person });
+                setEditingId(person.id);
+                setModalMode('edit');
+            };
+
+            const saveAttendee = () => {
+                if (!formData.name.trim()) return;
+                
+                const newItem = {
+                    id: editingId || Date.now().toString(),
+                    ...formData,
+                    isPresent: editingId ? (attendees.find(a => a.id === editingId)?.isPresent ?? true) : true
+                };
+
+                if (editingId) {
+                    setAttendees(prev => prev.map(p => p.id === editingId ? newItem : p));
+                } else {
+                    setAttendees(prev => [...prev, newItem]);
+                }
+                setModalMode(null);
+            };
+
+            const deleteAttendee = () => {
+                if (confirm('確定刪除?')) {
+                    setAttendees(prev => prev.filter(p => p.id !== editingId));
+                    setModalMode(null);
+                }
+            };
+
+            const toggleAttendance = (id) => {
+                setAttendees(prev => prev.map(p => p.id === id ? { ...p, isPresent: !p.isPresent } : p));
+            };
+            
+            const togglePayment = (id, e) => {
+                e.stopPropagation();
+                setAttendees(prev => prev.map(p => p.id === id ? { ...p, hasPaid: !p.hasPaid } : p));
+            };
+
+            const handleAiVision = async () => {
+                if (!formData.name) return alert('請先輸入姓名');
+                
+                let key = getApiKey();
+                if (!key) {
+                    key = prompt('請輸入 Gemini API Key (不會儲存於伺服器):');
+                    if (key) localStorage.setItem('gemini_api_key', key);
+                    else return;
+                }
+
+                if (!window.GoogleGenAI) return alert('AI SDK 尚未載入，請檢查網路。');
+
+                setIsGenerating(true);
+                try {
+                    const ai = new window.GoogleGenAI({ apiKey: key });
+                    const model = ai.models.getGenerativeModel ? ai.models.getGenerativeModel({ model: "gemini-2.5-flash" }) : null;
+                    // Fallback for different SDK versions if strictly using the one imported
+                    // The new SDK syntax from guidelines:
+                    // ai.models.generateContent
+                    
+                    const response = await ai.models.generateContent({
+                        model: 'gemini-2.5-flash',
+                        contents: `為"${formData.name}"想一個簡短有趣的明年願景(New Year Resolution)，職場聚餐用，30字內，繁體中文。`,
+                    });
+                    
+                    setFormData(prev => ({ ...prev, vision: response.text.trim() }));
+                } catch (e) {
+                    console.error(e);
+                    alert('AI 生成失敗: ' + e.message);
+                } finally {
+                    setIsGenerating(false);
+                }
+            };
+
+            return (
+                <div className="max-w-lg mx-auto bg-white min-h-screen shadow-2xl flex flex-col relative pb-20">
+                    
+                    {/* Header: Financials */}
+                    <div className="bg-white p-4 sticky top-0 z-30 shadow-sm border-b border-slate-100">
+                        <div className="flex justify-between items-center mb-4">
+                            <h1 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                                <span className="bg-indigo-600 text-white p-1 rounded">聚</span>
+                                聚餐分帳
+                            </h1>
+                            <button 
+                                onClick={() => setModalMode('report')}
+                                className="text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1 active:scale-95"
+                            >
+                                <Icons.Share2 size={16}/> 報表
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                            <div className="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                                <label className="text-xs text-slate-500 font-bold block mb-1">總餐費</label>
+                                <input 
+                                    type="number" 
+                                    className="w-full bg-transparent text-lg font-bold text-slate-800 outline-none placeholder-slate-300"
+                                    placeholder="0"
+                                    value={totalBill || ''}
+                                    onChange={e => setTotalBill(Number(e.target.value))}
+                                />
+                            </div>
+                            <div className="bg-emerald-50 p-2 rounded-xl border border-emerald-100">
+                                <label className="text-xs text-emerald-600 font-bold block mb-1">扣公積金</label>
+                                <input 
+                                    type="number" 
+                                    className="w-full bg-transparent text-lg font-bold text-emerald-700 outline-none placeholder-emerald-300"
+                                    placeholder="0"
+                                    value={publicFund || ''}
+                                    onChange={e => setPublicFund(Number(e.target.value))}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="bg-indigo-600 rounded-xl p-4 text-white shadow-lg shadow-indigo-200 flex justify-between items-center">
+                            <div>
+                                <div className="text-indigo-200 text-xs font-medium mb-1">每人應付 (Split)</div>
+                                <div className="text-3xl font-bold tracking-tight">${stats.perPersonCost}</div>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-indigo-200 text-xs font-medium mb-1">收款進度</div>
+                                <div className="font-bold text-lg">
+                                    {stats.paidCount} <span className="text-indigo-300 text-sm">/ {stats.presentCount}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Attendee List */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                        {attendees.map((person, idx) => (
+                            <div 
+                                key={person.id}
+                                onClick={() => openEdit(person)}
+                                className={`relative p-4 rounded-2xl border transition-all active:scale-[0.98] cursor-pointer ${
+                                    person.isPresent 
+                                    ? 'bg-white border-slate-200 shadow-sm' 
+                                    : 'bg-slate-50 border-slate-100 opacity-60'
+                                }`}
+                            >
+                                <div className="flex justify-between items-center mb-2">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-slate-300 font-mono text-sm">#{idx+1}</span>
+                                        <h3 className={`font-bold text-lg ${person.isPresent ? 'text-slate-800' : 'text-slate-400 line-through'}`}>
+                                            {person.name}
+                                        </h3>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        {/* Payment Toggle */}
+                                        {person.isPresent && (
+                                            <button 
+                                                onClick={(e) => togglePayment(person.id, e)}
+                                                className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors border ${
+                                                    person.hasPaid 
+                                                    ? 'bg-yellow-400 border-yellow-500 text-white shadow-sm' 
+                                                    : 'bg-white border-slate-200 text-slate-300 hover:border-yellow-400'
+                                                }`}
+                                            >
+                                                <Icons.Banknote size={18} />
+                                            </button>
+                                        )}
+                                        {/* Attendance Toggle */}
+                                        <button 
+                                            onClick={(e) => { e.stopPropagation(); toggleAttendance(person.id); }}
+                                            className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 transition-colors ${
+                                                person.isPresent 
+                                                ? 'bg-indigo-100 text-indigo-700' 
+                                                : 'bg-slate-200 text-slate-500'
+                                            }`}
+                                        >
+                                            {person.isPresent ? <Icons.UserCheck size={14}/> : <Icons.UserX size={14}/>}
+                                            {person.isPresent ? '出席' : '缺席'}
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                {person.isPresent && (person.vision || person.remarks) && (
+                                    <div className="text-sm text-slate-500 mt-2 pl-8 space-y-1">
+                                        {person.vision && (
+                                            <div className="flex gap-1.5 items-start">
+                                                <Icons.Sparkles size={14} className="text-purple-400 mt-0.5 shrink-0"/>
+                                                <span className="text-purple-900/70 bg-purple-50 px-1.5 rounded">{person.vision}</span>
+                                            </div>
+                                        )}
+                                        {person.remarks && (
+                                            <div className="flex gap-1.5 items-start">
+                                                <Icons.Edit2 size={14} className="text-slate-400 mt-0.5 shrink-0"/>
+                                                <span>{person.remarks}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                        
+                        {attendees.length === 0 && (
+                            <div className="text-center py-10 text-slate-400">
+                                <p>尚未新增名單</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Add Button */}
+                    <button 
+                        onClick={openAdd}
+                        className="fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-xl shadow-indigo-300 flex items-center justify-center active:scale-90 transition-transform z-40"
+                    >
+                        <Icons.Plus size={28} />
+                    </button>
+
+                    {/* Modals */}
+                    
+                    {/* 1. Report Modal */}
+                    <Modal 
+                        isOpen={modalMode === 'report'} 
+                        onClose={() => setModalMode(null)} 
+                        title="📋 文字報表"
+                    >
+                        <ReportView stats={stats} attendees={attendees} />
+                    </Modal>
+
+                    {/* 2. Edit/Add Modal */}
+                    <Modal
+                        isOpen={modalMode === 'add' || modalMode === 'edit'}
+                        onClose={() => setModalMode(null)}
+                        title={modalMode === 'add' ? '新增人員' : '編輯人員'}
+                    >
+                        <div className="space-y-4 p-1">
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">姓名</label>
+                                <input 
+                                    type="text" 
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 transition-colors"
+                                    placeholder="輸入名字"
+                                    value={formData.name}
+                                    onChange={e => setFormData({...formData, name: e.target.value})}
+                                />
+                            </div>
+
+                            {/* Has Paid Checkbox inside form too */}
+                             <div 
+                                onClick={() => setFormData(p => ({...p, hasPaid: !p.hasPaid}))}
+                                className={`flex items-center justify-between p-3 border rounded-xl cursor-pointer transition-colors ${
+                                    formData.hasPaid ? 'bg-emerald-50 border-emerald-300' : 'bg-white border-slate-200'
+                                }`}
+                             >
+                                <div className="flex items-center gap-2">
+                                    <div className={`p-1.5 rounded-full ${formData.hasPaid ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                                        <Icons.Banknote size={20} />
+                                    </div>
+                                    <span className={`font-bold ${formData.hasPaid ? 'text-emerald-800' : 'text-slate-500'}`}>
+                                        {formData.hasPaid ? '已付款' : '尚未付款'}
+                                    </span>
+                                </div>
+                                {formData.hasPaid && <Icons.Check size={20} className="text-emerald-500"/>}
+                             </div>
+
+                            <div className="bg-purple-50 p-3 rounded-xl border border-purple-100">
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="text-sm font-bold text-purple-900 flex items-center gap-1">
+                                        <Icons.Sparkles size={14}/> 明年願景
+                                    </label>
+                                    <button 
+                                        onClick={handleAiVision}
+                                        disabled={isGenerating}
+                                        className="text-xs bg-white text-purple-600 border border-purple-200 px-2 py-1 rounded-lg font-bold active:scale-95"
+                                    >
+                                        {isGenerating ? '生成中...' : 'AI 幫我想'}
+                                    </button>
+                                </div>
+                                <textarea 
+                                    className="w-full p-2 bg-white/80 border border-purple-200 rounded-lg text-sm outline-none resize-none h-20 placeholder-purple-300 text-purple-900"
+                                    placeholder="例如：減肥成功、升官發財..."
+                                    value={formData.vision}
+                                    onChange={e => setFormData({...formData, vision: e.target.value})}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">備註</label>
+                                <textarea 
+                                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 h-24 resize-none"
+                                    placeholder="記錄飲食禁忌、是否攜伴..."
+                                    value={formData.remarks}
+                                    onChange={e => setFormData({...formData, remarks: e.target.value})}
+                                />
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                {modalMode === 'edit' && (
+                                    <button 
+                                        onClick={deleteAttendee}
+                                        className="px-4 py-3 border border-red-200 text-red-500 rounded-xl font-bold hover:bg-red-50"
+                                    >
+                                        <Icons.Trash2 size={20} />
+                                    </button>
+                                )}
+                                <button 
+                                    onClick={saveAttendee}
+                                    className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 active:scale-95 transition-transform"
+                                >
+                                    儲存
+                                </button>
+                            </div>
+                        </div>
+                    </Modal>
+
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
