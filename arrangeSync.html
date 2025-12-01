@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8">
+    <title>網路輿情編排系統 - 多用戶版</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .user-panel {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .user-panel select, .user-panel input, .user-panel button {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .user-panel button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .user-panel button:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+        }
+        .user-panel button.delete {
+            background: #ef4444;
+        }
+        .user-panel button.delete:hover {
+            background: #dc2626;
+        }
+        .sync-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #d1fae5;
+            color: #065f46;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .toolbar button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #4f46e5;
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+        .btn-info {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-info:hover {
+            background: #2563eb;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .info-box {
+            background: #fef3c7;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            border-left: 4px solid #f59e0b;
+        }
+        .info-box strong {
+            color: #92400e;
+        }
+        div.section {
+            min-height: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+        }
+        table {
+            width: 100%;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1f2937;
+        }
+        #main2 { background-color: #fee2e2; }
+        #main3 { background-color: #fef3c7; }
+        #main4 { background-color: #dbeafe; }
+        #finallcontent {
+            width: 100%;
+            min-height: 400px;
+            padding: 15px;
+            border: 2px solid #d1d5db;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .action-buttons button {
+            padding: 6px 12px;
+            margin-right: 5px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #e5e7eb;
+            transition: all 0.2s;
+        }
+        .action-buttons button:hover {
+            background: #d1d5db;
+        }
+        .last-saved {
+            font-size: 12px;
+            color: #6b7280;
+            margin-left: 10px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0; color: #1f2937;">📰 網路輿情編排系統</h1>
+            <div>
+                <span class="sync-status" id="syncStatus" style="display: none;">
+                    <span class="sync-dot"></span>
+                    已同步
+                </span>
+                <span class="last-saved" id="lastSaved"></span>
+            </div>
+        </div>
+
+        <!-- 用戶管理面板 -->
+        <div class="user-panel">
+            <label style="font-weight: bold;">👤 用戶：</label>
+            <select id="userSelect" onchange="switchUser()">
+                <option value="">請選擇用戶</option>
+            </select>
+            <input type="text" id="newUserName" placeholder="新用戶名稱" style="width: 150px;">
+            <button onclick="createUser()">➕ 建立用戶</button>
+            <button class="delete" onclick="deleteUser()">🗑️ 刪除用戶</button>
+            
+            <label style="font-weight: bold; margin-left: 20px;">⏰ 時段：</label>
+            <select id="hour" onchange="switchTimeSlot()">
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16</option>
+                <option value="17">17</option>
+                <option value="18">18</option>
+            </select>
+        </div>
+
+        <!-- 提示訊息 -->
+        <div class="info-box">
+            💡 <strong>合併功能說明：</strong><br>
+            • <strong>14 時</strong>：可合併 10+11+12+14 時的新聞<br>
+            • <strong>18 時</strong>：可合併 15+16+17+18 時的新聞
+        </div>
+
+        <!-- 工具列 -->
+        <div class="toolbar">
+            <button class="btn-primary" onclick="addNo()">📝 自動編號</button>
+            <button class="btn-primary" onclick="removeNo()">🔄 移除編號</button>
+            <button class="btn-success" onclick="manualSave()">💾 手動儲存</button>
+            <button class="btn-info" onclick="mergeTimeSlots()">🔀 合併時段</button>
+        </div>
+
+        <p class="section-title">🏛️ 市政</p>
+        <div id="main2" class="section drag-sort-enable">
+            <table>
+                <tbody>
+                    <tr>
+                        <td><textarea name="post" style="height: 35px;" oninput="autogrow(this)"></textarea></td>
+                        <td class="action-buttons" onmouseover="dragReady(this)" onmouseleave="dragStop(this)">
+                            <button onclick="addPost(this)">新增</button>
+                            <button onclick="removePost(this)">刪除</button>
+                            <button>移動</button>
+                            <button onclick="combine(this)">合併</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <tbody>
+                    <tr>
+                        <td><textarea name="post" style="height: 35px;" oninput="autogrow(this)"></textarea></td>
+                        <td class="action-buttons" onmouseover="dragReady(this)" onmouseleave="dragStop(this)">
+                            <button onclick="addPost(this)">新增</button>
+                            <button onclick="removePost(this)">刪除</button>
+                            <button>移動</button>
+                            <button onclick="combine(this)">合併</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="section-title">⭐ 重點</p>
+        <div id="main3" class="section drag-sort-enable">
+            <table>
+                <tbody>
+                    <tr>
+                        <td><textarea name="post" style="height: 35px;" oninput="autogrow(this)"></textarea></td>
+                        <td class="action-buttons" onmouseover="dragReady(this)" onmouseleave="dragStop(this)">
+                            <button onclick="addPost(this)">新增</button>
+                            <button onclick="removePost(this)">刪除</button>
+                            <button>移動</button>
+                            <button onclick="combine(this)">合併</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <tbody>
+                    <tr>
+                        <td><textarea name="post" style="height: 35px;" oninput="autogrow(this)"></textarea></td>
+                        <td class="action-buttons" onmouseover="dragReady(this)" onmouseleave="dragStop(this)">
+                            <button onclick="addPost(this)">新增</button>
+                            <button onclick="removePost(this)">刪除</button>
+                            <button>移動</button>
+                            <button onclick="combine(this)">合併</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="section-title">📱 社群</p>
+        <div id="main4" class="section drag-sort-enable">
+            <table>
+                <tbody>
+                    <tr>
+                        <td><textarea name="post" style="height: 35px;" oninput="autogrow(this)"></textarea></td>
+                        <td class="action-buttons" onmouseover="dragReady(this)" onmouseleave="dragStop(this)">
+                            <button onclick="addPost(this)">新增</button>
+                            <button onclick="removePost(this)">刪除</button>
+                            <button>移動</button>
+                            <button onclick="combine(this)">合併</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table>
+                <tbody>
+                    <tr>
+                        <td><textarea name="post" style="height: 35px;" oninput="autogrow(this)"></textarea></td>
+                        <td class="action-buttons" onmouseover="dragReady(this)" onmouseleave="dragStop(this)">
+                            <button onclick="addPost(this)">新增</button>
+                            <button onclick="removePost(this)">刪除</button>
+                            <button>移動</button>
+                            <button onclick="combine(this)">合併</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="section-title">📄 最終報表</p>
+        <textarea id="finallcontent"></textarea>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDy1B1ilbJ9j5r2yzmEpHmUif4ag6zqafM",
+            authDomain: "news-arrange-system.firebaseapp.com",
+            projectId: "news-arrange-system",
+            storageBucket: "news-arrange-system.firebasestorage.app",
+            messagingSenderId: "322470991030",
+            appId: "1:322470991030:web:530e201c0b7b7b66108217"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        window.firebaseDB = db;
+        window.firebaseDoc = doc;
+        window.firebaseSetDoc = setDoc;
+        window.firebaseGetDoc = getDoc;
+        window.firebaseCollection = collection;
+        window.firebaseGetDocs = getDocs;
+        window.firebaseDeleteDoc = deleteDoc;
+        
+        console.log('✅ Firebase 已初始化 (news-arrange-system)');
+    </script>
+
+    <script>
+        let currentUser = '';
+        let currentHour = '10';
+        let autoSaveInterval;
+        let isUpdating = false;
+
+        // 初始化
+        window.addEventListener('load', async () => {
+            await loadUsers();
+            startAutoSave();
+        });
+
+        // 載入用戶列表
+        async function loadUsers() {
+            if (!window.firebaseDB) return;
+            
+            try {
+                const usersCol = window.firebaseCollection(window.firebaseDB, 'newsUsers');
+                const snapshot = await window.firebaseGetDocs(usersCol);
+                
+                const userSelect = document.getElementById('userSelect');
+                userSelect.innerHTML = '<option value="">請選擇用戶</option>';
+                
+                snapshot.forEach(doc => {
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = doc.id;
+                    userSelect.appendChild(option);
+                });
+                
+                console.log(`✅ 載入 ${snapshot.size} 個用戶`);
+            } catch (error) {
+                console.error('❌ 載入用戶失敗:', error);
+            }
+        }
+
+        // 建立新用戶
+        async function createUser() {
+            const userName = document.getElementById('newUserName').value.trim();
+            if (!userName) {
+                alert('請輸入用戶名稱！');
+                return;
+            }
+            
+            if (!window.firebaseDB) {
+                alert('Firebase 未初始化！');
+                return;
+            }
+            
+            try {
+                const userDoc = window.firebaseDoc(window.firebaseDB, 'newsUsers', userName);
+                await window.firebaseSetDoc(userDoc, {
+                    createdAt: new Date(),
+                    timeSlots: {}
+                });
+                
+                alert(`✅ 用戶「${userName}」建立成功！`);
+                document.getElementById('newUserName').value = '';
+                await loadUsers();
+                
+                // 自動切換到新用戶
+                document.getElementById('userSelect').value = userName;
+                switchUser();
+            } catch (error) {
+                console.error('❌ 建立用戶失敗:', error);
+                alert('建立用戶失敗：' + error.message);
+            }
+        }
+
+        // 刪除用戶
+        async function deleteUser() {
+            const userName = document.getElementById('userSelect').value;
+            if (!userName) {
+                alert('請先選擇要刪除的用戶！');
+                return;
+            }
+            
+            if (!confirm(`確定要刪除用戶「${userName}」嗎？\n此操作無法復原！`)) {
+                return;
+            }
+            
+            try {
+                const userDoc = window.firebaseDoc(window.firebaseDB, 'newsUsers', userName);
+                await window.firebaseDeleteDoc(userDoc);
+                
+                alert(`✅ 用戶「${userName}」已刪除！`);
+                currentUser = '';
+                await loadUsers();
+                clearAllContent();
+            } catch (error) {
+                console.error('❌ 刪除用戶失敗:', error);
+                alert('刪除用戶失敗：' + error.message);
+            }
+        }
+
+        // 切換用戶
+        function switchUser() {
+            const userName = document.getElementById('userSelect').value;
+            if (!userName) {
+                currentUser = '';
+                clearAllContent();
+                return;
+            }
+            
+            currentUser = userName;
+            loadContent();
+        }
+
+        // 切換時段
+        function switchTimeSlot() {
+            currentHour = document.getElementById('hour').value;
+            if (currentUser) {
+                loadContent();
+            }
+        }
+
+        // 手動儲存
+        async function manualSave() {
+            if (!currentUser) {
+                alert('請先選擇用戶！');
+                return;
+            }
+            
+            await saveContent();
+            alert('✅ 儲存成功！');
+        }
+
+        // 儲存內容到 Firebase
+        async function saveContent() {
+            if (!currentUser || !window.firebaseDB || isUpdating) return;
+            
+            try {
+                const contentData = {
+                    sections: []
+                };
+                
+                // 獲取所有區塊的內容
+                const sections = document.getElementsByClassName('drag-sort-enable');
+                for (let i = 0; i < sections.length; i++) {
+                    const sectionData = {
+                        id: sections[i].id,
+                        posts: []
+                    };
+                    
+                    const textareas = sections[i].getElementsByTagName('textarea');
+                    for (let j = 0; j < textareas.length; j++) {
+                        sectionData.posts.push(textareas[j].value);
+                    }
+                    
+                    contentData.sections.push(sectionData);
+                }
+                
+                // 儲存到 Firebase
+                const userDoc = window.firebaseDoc(window.firebaseDB, 'newsUsers', currentUser);
+                const docSnap = await window.firebaseGetDoc(userDoc);
+                const userData = docSnap.exists() ? docSnap.data() : {};
+                
+                if (!userData.timeSlots) {
+                    userData.timeSlots = {};
+                }
+                
+                userData.timeSlots[currentHour] = {
+                    content: contentData,
+                    lastUpdated: new Date()
+                };
+                
+                await window.firebaseSetDoc(userDoc, userData);
+                
+                document.getElementById('syncStatus').style.display = 'inline-flex';
+                document.getElementById('lastSaved').textContent = `最後儲存：${new Date().toLocaleTimeString('zh-TW')}`;
+                
+                console.log(`✅ 已儲存 ${currentUser} - ${currentHour}時`);
+            } catch (error) {
+                console.error('❌ 儲存失敗:', error);
+                alert('儲存失敗：' + error.message);
+            }
+        }
+
+        // 讀取內容
+        async function loadContent() {
+            if (!currentUser || !window.firebaseDB) return;
+            
+            isUpdating = true;
+            
+            try {
+                const userDoc = window.firebaseDoc(window.firebaseDB, 'newsUsers', currentUser);
+                const docSnap = await window.firebaseGetDoc(userDoc);
+                
+                if (!docSnap.exists()) {
+                    console.log('📝 用戶資料不存在');
+                    clearAllContent();
+                    isUpdating = false;
+                    return;
+                }
+                
+                const userData = docSnap.data();
+                const timeSlotData = userData.timeSlots?.[currentHour];
+                
+                if (!timeSlotData) {
+                    console.log(`📝 時段 ${currentHour} 無資料`);
+                    clearAllContent();
+                    isUpdating = false;
+                    return;
+                }
+                
+                const contentData = timeSlotData.content;
+                
+                // 恢復各區塊內容
+                contentData.sections.forEach(section => {
+                    const sectionElement = document.getElementById(section.id);
+                    if (sectionElement) {
+                        // 清空現有內容
+                        while (sectionElement.firstChild) {
+                            sectionElement.removeChild(sectionElement.firstChild);
+                        }
+                        
+                        // 重建內容
+                        section.posts.forEach(post => {
+                            const table = document.createElement('table');
+                            const tr = table.insertRow(0);
+                            const td1 = tr.insertCell(0);
+                            const td2 = tr.insertCell(1);
+                            
+                            td2.className = 'action-buttons';
+                            td2.setAttribute('onmouseover', 'dragReady(this)');
+                            td2.setAttribute('onmouseleave', 'dragStop(this)');
+                            
+                            td1.innerHTML = `<textarea name="post" style="height: 35px;" oninput="autogrow(this)">${post}</textarea>`;
+                            td2.innerHTML = '<button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button>';
+                            
+                            sectionElement.appendChild(table);
+                            
+                            // 自動調整高度
+                            const textarea = td1.querySelector('textarea');
+                            autogrow(textarea);
+                        });
+                    }
+                });
+                
+                enableDragSort('drag-sort-enable');
+                
+                const lastUpdate = timeSlotData.lastUpdated?.toDate?.() || new Date(timeSlotData.lastUpdated);
+                document.getElementById('lastSaved').textContent = `最後儲存：${lastUpdate.toLocaleString('zh-TW')}`;
+                document.getElementById('syncStatus').style.display = 'inline-flex';
+                
+                console.log(`✅ 已載入 ${currentUser} - ${currentHour}時`);
+            } catch (error) {
+                console.error('❌ 讀取失敗:', error);
+                alert('讀取失敗：' + error.message);
+            }
+            
+            isUpdating = false;
+        }
+
+        // 合併時段功能
+        async function mergeTimeSlots() {
+            if (!currentUser) {
+                alert('請先選擇用戶！');
+                return;
+            }
+            
+            const currentHourNum = parseInt(currentHour);
+            let timeSlotsToMerge = [];
+            let targetHour = '';
+            
+            // 判斷要合併哪些時段
+            if (currentHourNum === 14) {
+                timeSlotsToMerge = ['10', '11', '12', '14'];
+                targetHour = '14';
+            } else if (currentHourNum === 18) {
+                timeSlotsToMerge = ['15', '16', '17', '18'];
+                targetHour = '18';
+            } else {
+                alert('⚠️ 只能在 14 時或 18 時使用合併功能！\n\n14 時：合併 10+11+12+14\n18 時：合併 15+16+17+18');
+                return;
+            }
+            
+            if (!confirm(`確定要合併 ${timeSlotsToMerge.join('、')} 時的新聞嗎？\n\n將會覆蓋目前 ${targetHour} 時的內容！`)) {
+                return;
+            }
+            
+            try {
+                // 讀取用戶資料
+                const userDoc = window.firebaseDoc(window.firebaseDB, 'newsUsers', currentUser);
+                const docSnap = await window.firebaseGetDoc(userDoc);
+                
+                if (!docSnap.exists()) {
+                    alert('找不到用戶資料！');
+                    return;
+                }
+                
+                const userData = docSnap.data();
+                const mergedContent = {
+                    sections: [
+                        { id: 'main2', posts: [] }, // 市政
+                        { id: 'main3', posts: [] }, // 重點
+                        { id: 'main4', posts: [] }  // 社群
+                    ]
+                };
+                
+                // 合併各時段的內容
+                timeSlotsToMerge.forEach(hour => {
+                    const timeSlotData = userData.timeSlots?.[hour];
+                    if (timeSlotData && timeSlotData.content) {
+                        timeSlotData.content.sections.forEach((section, index) => {
+                            section.posts.forEach(post => {
+                                // 移除編號
+                                const cleanPost = removeNumbering(post);
+                                if (cleanPost.trim()) {
+                                    mergedContent.sections[index].posts.push(cleanPost);
+                                }
+                            });
+                        });
+                    }
+                });
+                
+                // 更新畫面
+                mergedContent.sections.forEach((section, index) => {
+                    const sectionElement = document.getElementById(section.id);
+                    if (sectionElement) {
+                        // 清空現有內容
+                        while (sectionElement.firstChild) {
+                            sectionElement.removeChild(sectionElement.firstChild);
+                        }
+                        
+                        // 重建內容
+                        section.posts.forEach(post => {
+                            const table = document.createElement('table');
+                            const tr = table.insertRow(0);
+                            const td1 = tr.insertCell(0);
+                            const td2 = tr.insertCell(1);
+                            
+                            td2.className = 'action-buttons';
+                            td2.setAttribute('onmouseover', 'dragReady(this)');
+                            td2.setAttribute('onmouseleave', 'dragStop(this)');
+                            
+                            td1.innerHTML = `<textarea name="post" style="height: 35px;" oninput="autogrow(this)">${post}</textarea>`;
+                            td2.innerHTML = '<button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button>';
+                            
+                            sectionElement.appendChild(table);
+                            
+                            // 自動調整高度
+                            const textarea = td1.querySelector('textarea');
+                            autogrow(textarea);
+                        });
+                    }
+                });
+                
+                enableDragSort('drag-sort-enable');
+                
+                alert(`✅ 已合併 ${timeSlotsToMerge.join('、')} 時的新聞！\n\n市政：${mergedContent.sections[0].posts.length} 則\n重點：${mergedContent.sections[1].posts.length} 則\n社群：${mergedContent.sections[2].posts.length} 則\n\n記得點擊「手動儲存」！`);
+                
+                document.getElementById('syncStatus').style.display = 'none';
+                
+            } catch (error) {
+                console.error('❌ 合併失敗:', error);
+                alert('合併失敗：' + error.message);
+            }
+        }
+
+        // 移除編號的輔助函數
+        function removeNumbering(text) {
+            let textslice = text.split("http");
+            let newContent = "";
+
+            for (let i = 0; i < textslice.length - 1; i++) {
+                if (/\d+-\d+[.]\s/.test(textslice[i])) {
+                    let noStart = textslice[i].search(/\d+-\d+[.]\s/);
+                    let tStart = textslice[i].match(/\d+-\d+[.]\s/)[0].length;
+                    newContent += textslice[i].slice(0, noStart) + textslice[i].slice(noStart + tStart) + "http";
+                } else if (/(\n\d-+)|(^\d+-+)\d+[.].+[^\n].+[(].*[)]\n/.test(textslice[i])) {
+                    let noStart = textslice[i].search(/\d+-\d+[.]/);
+                    let tStart = textslice[i].match(/\d+-\d+[.]/)[0].length;
+                    newContent += textslice[i].slice(0, noStart) + textslice[i].slice(noStart + tStart) + "http";
+                } else if (/\d+[.]\s/.test(textslice[i])) {
+                    let noStart = textslice[i].search(/\d+[.]\s/);
+                    let tStart = textslice[i].match(/\d+[.]\s/)[0].length;
+                    newContent += textslice[i].slice(0, noStart) + textslice[i].slice(noStart + tStart) + "http";
+                } else if (/(\n\d)|^\d+[.].*[^\n].*[(].*[)]\n/.test(textslice[i])) {
+                    let noStart = textslice[i].search(/\d+[.]/);
+                    let tStart = textslice[i].match(/\d+[.]/)[0].length;
+                    newContent += textslice[i].slice(0, noStart) + textslice[i].slice(noStart + tStart) + "http";
+                } else {
+                    newContent += textslice[i] + "http";
+                }
+            }
+
+            newContent += textslice[textslice.length - 1];
+            return newContent;
+        }
+
+        // 清空所有內容
+        function clearAllContent() {
+            const sections = document.getElementsByClassName('drag-sort-enable');
+            for (let i = 0; i < sections.length; i++) {
+                while (sections[i].firstChild) {
+                    sections[i].removeChild(sections[i].firstChild);
+                }
+                
+                // 添加兩個空白表格
+                for (let j = 0; j < 2; j++) {
+                    const table = document.createElement('table');
+                    const tr = table.insertRow(0);
+                    const td1 = tr.insertCell(0);
+                    const td2 = tr.insertCell(1);
+                    
+                    td2.className = 'action-buttons';
+                    td2.setAttribute('onmouseover', 'dragReady(this)');
+                    td2.setAttribute('onmouseleave', 'dragStop(this)');
+                    
+                    td1.innerHTML = '<textarea name="post" style="height: 35px;" oninput="autogrow(this)"></textarea>';
+                    td2.innerHTML = '<button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button>';
+                    
+                    sections[i].appendChild(table);
+                }
+            }
+            
+            document.getElementById('finallcontent').value = '';
+            document.getElementById('lastSaved').textContent = '';
+            document.getElementById('syncStatus').style.display = 'none';
+        }
+
+        // 自動儲存（每 5 分鐘）
+        function startAutoSave() {
+            autoSaveInterval = setInterval(() => {
+                if (currentUser) {
+                    saveContent();
+                    console.log('🔄 自動儲存完成');
+                }
+            }, 5 * 60 * 1000); // 5 分鐘
+        }
+
+        // 以下是原有功能
+        var divArray = document.getElementsByClassName('drag-sort-enable');
+        var day = new Date().getDate();
+
+        function combine(thisbutt) {
+            var text = thisbutt.parentNode.parentNode.cells[0].lastChild;
+            var combineBefore = text.value;
+            var eachone = combineBefore.split("http");
+            var bracketsleft = new RegExp(/[(].*[)]/);
+            var bracketsright = new RegExp(/[)]\n/);
+            var combineAfter = combineBefore.split("\n\n")[0].slice(0, eachone[0].search(bracketsright));
+
+            for (let index = 1; index < eachone.length - 1; index++) {
+                var start = eachone[index].search(bracketsleft);
+                var end = eachone[index].search(bracketsright);
+                eachone[index] = eachone[index].slice(start + 1, end);
+                combineAfter += "、" + eachone[index];
+            }
+            combineAfter += combineBefore.split("\n\n")[0].slice(eachone[0].search(bracketsright));
+            text.value = combineAfter;
+        }
+
+        function autogrow(text) {
+            var adjustedHeight = text.clientHeight;
+            adjustedHeight = Math.max(text.scrollHeight, adjustedHeight);
+            if (adjustedHeight > text.clientHeight) {
+                text.style.height = adjustedHeight + 'px';
+            }
+        }
+
+        function addNo() {
+            var rules = new RegExp(/[^\n].*[(].*[)]\n/);
+            var hour = document.getElementById('hour').value;
+
+            for (var d = 0; d < divArray.length; d++) {
+                allTextarea = divArray[d].getElementsByTagName("textarea");
+                for (let o = 0; o < allTextarea.length; o++) {
+                    var textslice = allTextarea[o].value.split("http");
+                    var newContent = "";
+                    if (textslice.length > 2) {
+                        newContent += (o + 1) + "-1. ";
+                        newContent += textslice[0] + "http";
+                    } else if (textslice.length > 1) {
+                        newContent += (o + 1) + ". ";
+                        newContent += textslice[0] + "http";
+                    }
+
+                    for (let i = 1; i < textslice.length - 1; i++) {
+                        titleStart = textslice[i].search(rules);
+                        newContent += textslice[i].slice(0, titleStart) + (o + 1) + "-" + (i + 1) + ". " + textslice[i].slice(titleStart) + "http";
+                    }
+                    if (textslice[textslice.length - 1].search('\n') > -1) {
+                        newContent += textslice[textslice.length - 1].slice(0, textslice[textslice.length - 1].search('\n'));
+                    } else {
+                        newContent += textslice[textslice.length - 1];
+                    }
+
+                    allTextarea[o].value = newContent;
+                }
+            }
+            
+            // 自動生成報表
+            var descriptionArray = new Array(3);
+            descriptionArray[0] = "今(" + day + ")日" + hour + "時新北市政府市政新聞彙整\n\n新聞局 新聞聯繫科 敬啟\n\n----------------------------------------------\n市政輿情，如下：\n\n";
+            descriptionArray[1] = "今(" + day + ")日" + hour + "時新北市政府重點新聞彙整\n\n新聞局 新聞聯繫科 敬啟\n-----------------------------------------------\n\n";
+            descriptionArray[2] = "今(" + day + ")日" + hour + "時新北市政府社群新聞彙整\n\n新聞局 新聞聯繫科 敬啟\n----------------------------------------------\n\n";
+
+            var finalltext = document.getElementById("finallcontent");
+            finalltext.value = "";
+            for (var des = 0; des < 3; des++) {
+                finalltext.value += descriptionArray[des];
+                var allthiscontent = divArray[des].getElementsByTagName("textarea");
+                for (let con = 0; con < allthiscontent.length; con++) {
+                    if (allthiscontent[con].value.trim()) {
+                        finalltext.value += allthiscontent[con].value + "\n\n";
+                    }
+                }
+            }
+            autogrow(finalltext);
+        }
+
+        function removeNo() {
+            var rules = new RegExp(/[^\n].*[(].*[)]\n/);
+            allTextarea = document.getElementsByName("post");
+            for (let o = 0; o < allTextarea.length; o++) {
+                var textslice = allTextarea[o].value.split("http");
+                var newContent = "";
+
+                for (let i = 0; i < textslice.length - 1; i++) {
+                    if (/\d+-\d+[.]\s/.test(textslice[i]) == true) {
+                        noStart = textslice[i].search(/\d+-\d+[.]\s/);
+                        tStart = textslice[i].match(/\d+-\d+[.]\s/)[0].length;
+                        newContent += textslice[i].slice(0, noStart) + textslice[i].slice(noStart + tStart) + "http";
+                    } else if (/(\n\d-+)|(^\d+-+)\d+[.].+[^\n].+[(].*[)]\n/.test(textslice[i]) == true) {
+                        noStart = textslice[i].search(/\d+-\d+[.]/);
+                        tStart = textslice[i].match(/\d+-\d+[.]/)[0].length;
+                        newContent += textslice[i].slice(0, noStart) + textslice[i].slice(noStart + tStart) + "http";
+                    } else if (/\d+[.]\s/.test(textslice[i]) == true) {
+                        noStart = textslice[i].search(/\d+[.]\s/);
+                        tStart = textslice[i].match(/\d+[.]\s/)[0].length;
+                        newContent += textslice[i].slice(0, noStart) + textslice[i].slice(noStart + tStart) + "http";
+                    } else if (/(\n\d)|^\d+[.].*[^\n].*[(].*[)]\n/.test(textslice[i]) == true) {
+                        noStart = textslice[i].search(/\d+[.]/);
+                        tStart = textslice[i].match(/\d+[.]/)[0].length;
+                        newContent += textslice[i].slice(0, noStart) + textslice[i].slice(noStart + tStart) + "http";
+                    } else {
+                        newContent += textslice[i] + "http";
+                    }
+                }
+
+                newContent += textslice[textslice.length - 1];
+                allTextarea[o].value = newContent;
+            }
+        }
+
+        function addPost(thisbutt) {
+            var thisTable = document.createElement("table");
+            var Tr = thisTable.insertRow(0);
+            Td1 = Tr.insertCell(Tr.cells.length);
+            Td2 = Tr.insertCell(Tr.cells.length);
+            Td2.className = 'action-buttons';
+            Td2.setAttribute('onmouseover', "dragReady(this)");
+            Td2.setAttribute('onmouseleave', "dragStop(this)");
+            Td1.innerHTML = '<textarea name="post" style="height: 35px;" oninput="autogrow(this)"></textarea>';
+            Td2.innerHTML = '<button onclick="addPost(this)">新增</button><button onclick="removePost(this)">刪除</button><button>移動</button><button onclick="combine(this)">合併</button>';
+            var div = thisbutt.parentNode.parentNode.parentNode.parentNode.parentNode;
+            div.insertBefore(thisTable, thisbutt.parentNode.parentNode.parentNode.parentNode.nextSibling);
+            (() => { enableDragSort('drag-sort-enable') })();
+        }
+
+        function removePost(thisbutt) {
+            var div = thisbutt.parentNode.parentNode.parentNode.parentNode.parentNode;
+            div.removeChild(thisbutt.parentNode.parentNode.parentNode.parentNode);
+        }
+
+        function enableDragSort(listClass) {
+            const sortableLists = document.getElementsByClassName(listClass);
+            Array.prototype.map.call(sortableLists, (list) => { enableDragList(list) });
+        }
+
+        function enableDragList(list) {
+            Array.prototype.map.call(list.children, (item) => { enableDragItem(item) });
+        }
+
+        function enableDragItem(item) {
+            item.ondrag = handleDrag;
+            item.ondragend = handleDrop;
+        }
+
+        function handleDrag(item) {
+            const selectedItem = item.target,
+                list = selectedItem.parentNode,
+                x = event.clientX,
+                y = event.clientY;
+
+            selectedItem.classList.add('drag-sort-active');
+            let swapItem = document.elementFromPoint(x, y) === null ? selectedItem : document.elementFromPoint(x, y);
+            if (list === swapItem.parentNode) {
+                swapItem = swapItem !== selectedItem.nextSibling ? swapItem : swapItem.nextSibling;
+                list.insertBefore(selectedItem, swapItem);
+            }
+        }
+
+        function handleDrop(item) {
+            item.target.classList.remove('drag-sort-active');
+        }
+
+        (() => { enableDragSort('drag-sort-enable') })();
+
+        function dragReady(d) {
+            var dragdiv = d.parentNode.parentNode.parentNode.parentNode;
+            for (var o = 0; o < dragdiv.children.length; o++) {
+                dragdiv.children[o].setAttribute('draggable', true);
+            }
+        }
+
+        function dragStop(d) {
+            var dragdiv = d.parentNode.parentNode.parentNode.parentNode;
+            for (var o = 0; o < dragdiv.children.length; o++) {
+                dragdiv.children[o].setAttribute('draggable', false);
+            }
+        }
+
+        // 監聽內容變更
+        document.addEventListener('input', (e) => {
+            if (e.target.tagName === 'TEXTAREA' && currentUser) {
+                document.getElementById('syncStatus').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
