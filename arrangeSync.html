@@ -252,7 +252,7 @@
         <!-- 提示訊息 -->
         <div class="info-box">
             💡 <strong>合併功能說明：</strong><br>
-            • <strong>14 時</strong>：可合併 10+11+12+14 時的新聞<br>
+            • <strong>14 時</strong>：可合併 11+12+14 時的新聞<br>
             • <strong>18 時</strong>：可合併 15+16+17+18 時的新聞
         </div>
 
@@ -602,8 +602,11 @@
                             sectionElement.removeChild(sectionElement.firstChild);
                         }
                         
+                        // ✅ 確保至少有兩個輸入框
+                        const postsToRender = section.posts.length > 0 ? section.posts : ['', ''];
+                        
                         // 重建內容
-                        section.posts.forEach(post => {
+                        postsToRender.forEach(post => {
                             const table = document.createElement('table');
                             const tr = table.insertRow(0);
                             const td1 = tr.insertCell(0);
@@ -653,13 +656,13 @@
             
             // 判斷要合併哪些時段
             if (currentHourNum === 14) {
-                timeSlotsToMerge = ['10', '11', '12', '14'];
+                timeSlotsToMerge = ['11', '12', '14'];  // ✅ 修正：不含 10
                 targetHour = '14';
             } else if (currentHourNum === 18) {
                 timeSlotsToMerge = ['15', '16', '17', '18'];
                 targetHour = '18';
             } else {
-                alert('⚠️ 只能在 14 時或 18 時使用合併功能！\n\n14 時：合併 10+11+12+14\n18 時：合併 15+16+17+18');
+                alert('⚠️ 只能在 14 時或 18 時使用合併功能！\n\n14 時：合併 11+12+14\n18 時：合併 15+16+17+18');
                 return;
             }
             
@@ -702,6 +705,15 @@
                     }
                 });
                 
+                // ✅ 修正：確保每個區塊至少有兩個輸入框
+                mergedContent.sections.forEach(section => {
+                    if (section.posts.length === 0) {
+                        section.posts = ['', ''];  // 至少兩個空白輸入框
+                    } else if (section.posts.length === 1) {
+                        section.posts.push('');  // 至少兩個輸入框
+                    }
+                });
+                
                 // 更新畫面
                 mergedContent.sections.forEach((section, index) => {
                     const sectionElement = document.getElementById(section.id);
@@ -736,7 +748,12 @@
                 
                 enableDragSort('drag-sort-enable');
                 
-                alert(`✅ 已合併 ${timeSlotsToMerge.join('、')} 時的新聞！\n\n市政：${mergedContent.sections[0].posts.length} 則\n重點：${mergedContent.sections[1].posts.length} 則\n社群：${mergedContent.sections[2].posts.length} 則\n\n記得點擊「手動儲存」！`);
+                // 計算實際有內容的新聞數量（不含空白）
+                const actualCounts = mergedContent.sections.map(section => 
+                    section.posts.filter(post => post.trim()).length
+                );
+                
+                alert(`✅ 已合併 ${timeSlotsToMerge.join('、')} 時的新聞！\n\n市政：${actualCounts[0]} 則\n重點：${actualCounts[1]} 則\n社群：${actualCounts[2]} 則\n\n記得點擊「手動儲存」！`);
                 
                 document.getElementById('syncStatus').style.display = 'none';
                 
@@ -785,7 +802,7 @@
                     sections[i].removeChild(sections[i].firstChild);
                 }
                 
-                // 添加兩個空白表格
+                // ✅ 確保至少有兩個空白表格
                 for (let j = 0; j < 2; j++) {
                     const table = document.createElement('table');
                     const tr = table.insertRow(0);
@@ -802,6 +819,8 @@
                     sections[i].appendChild(table);
                 }
             }
+            
+            enableDragSort('drag-sort-enable');
             
             document.getElementById('finallcontent').value = '';
             document.getElementById('lastSaved').textContent = '';
@@ -950,6 +969,13 @@
 
         function removePost(thisbutt) {
             var div = thisbutt.parentNode.parentNode.parentNode.parentNode.parentNode;
+            
+            // ✅ 修正：確保至少保留一個輸入框
+            if (div.children.length <= 1) {
+                alert('⚠️ 至少要保留一個輸入框！');
+                return;
+            }
+            
             div.removeChild(thisbutt.parentNode.parentNode.parentNode.parentNode);
         }
 
