@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Gourmet Swipe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      body {
+        overscroll-behavior-y: contain;
+        background-color: #f3f4f6;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "lucide-react": "https://esm.sh/lucide-react@0.330.0?external=react",
+        "clsx": "https://esm.sh/clsx@2.1.0",
+        "framer-motion": "https://esm.sh/framer-motion@11.0.3?external=react,react-dom"
+      }
+    }
+    </script>
+  <link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+            Layers, Flame, X, RotateCcw, MapPin, Clock, ExternalLink, 
+            RotateCw, AlertCircle, Phone, Map, Heart, Star, Ban, 
+            ArrowUp, ArrowDown, Share2, Utensils 
+        } from 'lucide-react';
+        import { motion, useMotionValue, useTransform, useAnimation, AnimatePresence } from 'framer-motion';
+        import clsx from 'clsx';
+
+        // --- Types & Constants ---
+        const RestaurantType = {
+            Buffet: '自助餐 (Buffet)',
+            Set: '套餐/半自助 (Set/Semi-Buffet)',
+        };
+          
+        const InteractionStatus = {
+            None: 'none',
+            Like: 'like',
+            Dislike: 'dislike',
+            SuperLike: 'superlike',
+            Block: 'block',
+        };
+
+        // --- Data Service ---
+        const IMG_PREMIUM = 'https://static.vecteezy.com/system/resources/thumbnails/059/967/334/small_2x/exquisite-seafood-buffet-a-culinary-masterpiece-of-shrimp-oysters-and-fresh-delights-on-ice-for-a-luxurious-dining-experience-free-photo.jpeg';
+        const IMG_STEAK = 'https://img.freepik.com/free-photo/vertical-closeup-shot-freshly-grilled-t-bone-steak-glass-wine-background_181624-36456.jpg';
+        const IMG_JAPANESE = 'https://media.istockphoto.com/id/844952022/photo/kaiseki-cuisine.jpg?s=612x612&w=is&k=20&c=clm_o70u4nfi1TU73aEnrIJQRLVBqSf40SIFX5reCk0=';
+        const IMG_CHINESE = 'https://cookmorphosis.com/wp-content/uploads/2022/09/vertical-roasted-duck-cantonese-style-1.jpg';
+        const IMG_VIEW = 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80';
+        const IMG_CASUAL = 'https://images.unsplash.com/photo-1555244162-803834f70033?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80';
+
+        const RESTAURANT_DATA = [
+          {
+            id: '2.1',
+            name: '台北凱撒大飯店｜Checkers',
+            type: RestaurantType.Buffet,
+            price: 599,
+            priceDisplay: '$599 起',
+            location: '台北車站',
+            address: '台北市中正區忠孝西路一段 38 號',
+            sellingPoint: '位於台北車站正對面，擁有無可取代的交通便捷性。低於600元的親民價格享飯店自助百匯，高CP值與通勤便利性的首選。',
+            features: '多樣化在地國際風味美食，包含義式料理、和牛吃到飽、豐富鮮蔬沙拉吧及精緻手工甜點。',
+            hours: ['午餐 11:30 - 14:00', '下午茶 14:30 - 16:30', '晚餐 17:30 - 21:00'],
+            rules: '需事先致電訂位並告知將使用核銷碼。特殊節日（如農曆春節期間）使用需補足現場價差。',
+            url: 'https://www.kkday.com/zh-tw/product/24223-taipei-caesar-hotel-meal-coupons-checkers',
+            image: IMG_CASUAL
+          },
+          {
+            id: '2.2',
+            name: '林口亞昕福朋喜來登酒店｜宜客樂西餐廳',
+            type: RestaurantType.Buffet,
+            price: 799,
+            priceDisplay: '$799 起',
+            location: '林口三井',
+            address: '新北市林口區文化三路一段 1 號',
+            sellingPoint: '適合前往林口三井Outlet逛街族群。以實惠價格體驗國際連鎖品牌喜來登等級餐飲，性價比極高。',
+            features: '開放式廚房設計，提供豐富中西式冷盤與熟食、精巧日式小品，以及多樣化甜點與水果。',
+            hours: ['平日午餐 11:30 - 14:00', '假日午餐 12:00 - 14:30', '晚餐 17:30 - 21:00'],
+            rules: '需事先致電訂位。餐券優惠效期至2025年12月31日，逾期需辦理退貨。',
+            url: 'https://www.kkday.com/zh-tw/product/124915',
+            image: IMG_CASUAL
+          },
+          {
+            id: '2.3',
+            name: '台北六福萬怡酒店｜敘日全日餐廳',
+            type: RestaurantType.Buffet,
+            price: 799,
+            priceDisplay: '$799 起',
+            location: '南港車站',
+            address: '台北市南港區忠孝東路七段 359 號 7 樓',
+            sellingPoint: '位於南港車站正上方，交通樞紐位置。主打「全區戶外花園景觀」，在都市中享受綠意盎然的環境。',
+            features: '強調「師傅現場烹調、現點現做」，提供最新鮮的食材與精緻餐點，涵蓋異國特色料理與海鮮百匯。',
+            hours: ['午餐 11:30 - 14:00', '下午茶 14:30 - 16:30 (週五至週日)', '晚餐 17:30 - 21:00'],
+            rules: '需於用餐3天前事先致電訂位。優惠效期依方案而異，最長至2025年12月30日。',
+            url: 'https://www.kkday.com/zh-tw/product/28828',
+            image: IMG_CASUAL
+          },
+          {
+            id: '2.4',
+            name: '台北新板希爾頓酒店｜悅市集',
+            type: RestaurantType.Buffet,
+            price: 850,
+            priceDisplay: '$850 起',
+            location: '板橋',
+            address: '新北市板橋區民權路 88 號',
+            sellingPoint: '板橋指標性五星飯店，「平日晚餐不加價」方案極具吸引力，適合不想被加價的上班族或家庭聚餐。',
+            features: '由西班牙主廚坐鎮，主打道地地中海異國料理，並提供客製化海鮮料理服務。',
+            hours: ['午餐 11:30 - 14:00', '晚餐 17:30 - 21:00'],
+            rules: '假日使用需加價300元。需事先致電訂位。此優惠不計入希爾頓榮譽客會點數累積。',
+            url: 'https://www.kkday.com/zh-tw/product/23861-taipei-shinban-hilton-hotel-meal-voucher-yue-market-restaurant',
+            image: IMG_CASUAL
+          },
+          {
+            id: '2.5',
+            name: '台北喜來登大飯店｜十二廚',
+            type: RestaurantType.Buffet,
+            price: 899,
+            priceDisplay: '$899 起',
+            location: '善導寺',
+            address: '台北市中正區忠孝東路一段 12 號',
+            sellingPoint: '挑高中庭玻璃天幕設計，自然採光，「12座全開放式美食料理區」，寬敞明亮且互動性十足。',
+            features: '現切爐烤牛排、海港直送生猛海鮮、道地印度風味佳餚，以及無限暢飲的沁涼生啤酒。',
+            hours: ['午餐 11:30 - 14:00', '下午茶 15:00 - 17:00', '晚餐 18:00 - 21:00'],
+            rules: '應事先訂位並告知將使用電子票券。餐券優惠效期至2026年10月31日。',
+            url: 'https://www.kkday.com/zh-tw/product/34984-sheraton-grand-taipei-hotel-kitchen-12-buffet-taiwan',
+            image: IMG_PREMIUM
+          },
+          {
+            id: '2.6',
+            name: '台北凱達大飯店｜百宴自助餐廳',
+            type: RestaurantType.Buffet,
+            price: 960,
+            priceDisplay: '$960 起',
+            location: '萬華車站',
+            address: '台北市萬華區艋舺大道 167 號',
+            sellingPoint: '西區交通樞紐，與萬華車站共構，最適合需要搭乘台鐵或捷運、且偏好寬敞用餐空間的團體。',
+            features: '提供多樣化的中西式自助餐點，結合創意口味與料理美學。',
+            hours: ['午餐 11:30 - 14:00', '晚餐 17:30 - 21:00'],
+            rules: '需事先致電訂位。特殊節日（如農曆春節期間）使用需補足現場價差。',
+            url: 'https://www.kkday.com/zh-tw/product/23787-11-discount-china-travel-card-applicable-wanhua-kaida-hotel-baiyan-buffet-restaurant-meal-coupon-taipei-taiwan',
+            image: IMG_CASUAL
+          },
+          {
+            id: '2.7',
+            name: '台北茹曦酒店｜SUNNY BUFFET',
+            type: RestaurantType.Buffet,
+            price: 999,
+            priceDisplay: '$999 起',
+            location: '小巨蛋',
+            address: '台北市松山區敦化北路 100 號',
+            sellingPoint: '罕見52折超高折扣，千元不到享螃蟹、海鮮、啤酒無限供應。720坪寬敞空間與挑高天井自然採光。',
+            features: '主打「螃蟹、海鮮、啤酒、牛肉無限供應」，設有亞洲料理區、現點現烤牛肉區等多個美食區。',
+            hours: ['早餐 07:00 - 10:30', '午餐 11:30 - 14:00', '下午餐 14:45 - 17:00', '晚餐 18:00 - 21:00'],
+            rules: '需事先致電訂位。優惠效期為購買日起4個月。農曆春節除夕至初二等特定日期不適用。',
+            url: 'https://www.kkday.com/zh-tw/product/34969-meal-coupons-at-ruxi-hotel-taipei-sunny-buffet',
+            image: IMG_PREMIUM
+          },
+          {
+            id: '2.8',
+            name: 'Mega 50 餐飲及宴會｜50樓 Café',
+            type: RestaurantType.Buffet,
+            price: 1099,
+            priceDisplay: '$1,099 起',
+            location: '板橋大遠百',
+            address: '新北市板橋區新站路 16 號',
+            sellingPoint: '「全國最高的自助餐廳」，50樓層高，提供無敵城市景觀，特別適合追求獨特體驗或慶祝特殊日子。',
+            features: '以豐富的「海陸百匯」聞名，隨季節更換不同的料理主題，確保每次到訪都有驚喜。',
+            hours: ['平日午餐 11:30 - 14:00', '平日晚餐 18:00 - 21:00', '假日午餐 11:00-13:00 / 13:30-15:30', '假日晚餐 17:00-19:00 / 19:30-21:30'],
+            rules: '需事先致電訂位。聖誕節、跨年、農曆春節、母親節等特定節日不適用。',
+            url: 'https://www.kkday.com/zh-tw/product/34953-mega-50-banqiao-far-east-cafe-meal-coupon-on-the-50th-floor-new-taipei-taiwan',
+            image: IMG_VIEW
+          },
+          {
+            id: '2.9',
+            name: 'JR 東日本大飯店台北｜鉑麗安',
+            type: RestaurantType.Buffet,
+            price: 1350,
+            priceDisplay: '$1,350 起',
+            location: '南京復興',
+            address: '台北市中山區南京東路三段 133 號',
+            sellingPoint: '日籍主廚坐鎮，提供精緻日本東北料理，吸引日料愛好者的獨特選擇。',
+            features: '結合日式與西式精髓，提供螃蟹、生魚片、現煎牛排，特色菜如秋田米棒鍋、鮭魚親子丼。',
+            hours: ['午餐 11:30 - 14:00', '晚餐 18:00 - 21:30'],
+            rules: '需事先致電訂位。元旦、春節、228等國定連續假期不適用。',
+            url: 'https://www.kkday.com/zh-tw/product/130442',
+            image: IMG_JAPANESE
+          },
+          {
+            id: '2.10',
+            name: '台北遠東香格里拉｜遠東 CAFÉ',
+            type: RestaurantType.Buffet,
+            price: 1550,
+            priceDisplay: '$1,550 起',
+            location: '敦化南路',
+            address: '台北市敦化南路二段 201 號',
+            sellingPoint: '奢華Buffet代表，12大主題餐檯極致豐富，鼎泰豐聯名等獨家亮點，適合預算充足的美食家。',
+            features: '獨家亮點包括西班牙烤爐現烤炭烤肉品，以及與知名品牌「鼎泰豐」的聯名餐點。',
+            hours: ['午餐 11:45 - 14:00', '下午茶 15:00 - 17:00 (週一二公休)', '晚餐 18:00 - 21:30'],
+            rules: '應事先訂位。效期至2026/6/30。不適用於特定日期，詳情依官方頁面為準。',
+            url: 'https://www.kkday.com/zh-tw/product/23507-far-eastern-shangri-la-taipei-cafe-buffet-taiwan',
+            image: IMG_PREMIUM
+          },
+          {
+            id: '2.11',
+            name: '台北老爺酒店｜Le Café 咖啡廳',
+            type: RestaurantType.Buffet,
+            price: 1599,
+            priceDisplay: '$1,599 起',
+            location: '中山北路',
+            address: '台北市中山北路二段 37 之 1 號',
+            sellingPoint: '台北市「老字號自助餐廳」，經典地位、優雅環境與細膩服務，追求穩定高品質體驗的選擇。',
+            features: '精緻美味的無國界自助料理，每道菜餚展現高檔品質，「招牌甜點」更是必嚐經典。',
+            hours: ['午餐 11:30 - 14:00', '下午茶 14:30 - 16:30', '晚餐 18:00 - 21:30'],
+            rules: '需事先致電訂位。特殊節日（如跨年、農曆春節、母親節等）使用需補足現場價差。',
+            url: 'https://www.kkday.com/zh-tw/product/34785',
+            image: IMG_VIEW
+          },
+          {
+            id: '2.12',
+            name: '台北寒舍艾美酒店｜探索廚房',
+            type: RestaurantType.Buffet,
+            price: 9999, 
+            priceDisplay: '已售罄',
+            location: '信義區',
+            address: '台北市信義區松仁路 38 號',
+            sellingPoint: '信義區超人氣餐廳，「創新自助餐檯及單點兼具」的獨特用餐方式，提供精緻客製化服務。',
+            features: '標榜完美呈現各國風味料理，菜色精緻富有創意。',
+            hours: ['午餐 11:30 - 14:00', '下午茶 15:00 - 17:00', '晚餐 18:00 - 21:00'],
+            rules: '需事先致電訂位。主題美食節、國定假日及連假不適用。目前已售罄，建議關注補貨。',
+            url: 'https://www.kkday.com/zh-tw/product/23440-le-meridien-taipei-hotel-meal-voucher-latest-recipe',
+            image: IMG_PREMIUM
+          },
+          {
+            id: '3.1',
+            name: '台北士林萬麗酒店｜士林廚房',
+            type: RestaurantType.Set,
+            price: 520,
+            priceDisplay: '$520 起',
+            location: '士林官邸',
+            address: '台北市士林區中山北路五段 470 巷 8 號',
+            sellingPoint: '極具競爭力的親民價格，緊鄰士林官邸，落地窗景觀優美。提供半自助或套餐選擇。',
+            features: '多樣化的自助吧，菜色包含牛排、鐵板燒、海鮮等，滿足對主食與海鮮的偏好。',
+            hours: ['早餐 06:30 - 10:00', '午餐 12:00 - 14:00', '晚餐 18:00 - 21:00'],
+            rules: '需事先致電訂位。此優惠恕不與萬豪會員積分累積及各項福利合併使用。',
+            url: 'https://www.kkday.com/zh-tw/product/101917',
+            image: IMG_STEAK
+          },
+          {
+            id: '3.2',
+            name: '台北北投天玥泉會館｜天饗食坊',
+            type: RestaurantType.Set,
+            price: 650,
+            priceDisplay: '$650 起',
+            location: '新北投',
+            address: '台北市北投區中山路 3 號',
+            sellingPoint: '鄰近新北投捷運站，交通便利。旅客享受北投溫泉前後，尋求便利與悠閒餐飲的最佳選擇。',
+            features: '由星級廚師團隊打造「無國界料理」，主打火鍋等暖心餐點。',
+            hours: ['午餐 11:30 - 14:00', '下午茶 14:30 - 17:00', '晚餐 17:30 - 21:00'],
+            rules: '需事先致電訂位。此餐飲方案無法用於泡湯。特殊節日使用需補足現場價差。',
+            url: 'https://www.kkday.com/zh-tw/product/23782',
+            image: IMG_JAPANESE
+          },
+          {
+            id: '3.3',
+            name: '台北北投老爺酒店｜PURE 歐式餐廳',
+            type: RestaurantType.Set,
+            price: 660,
+            priceDisplay: '$660 起',
+            location: '新北投',
+            address: '台北市北投區中和街 2 號',
+            sellingPoint: '強調質感與健康，部分方案可搭配頂樓「沐泉療中心」裸湯，身心靈全方位放鬆。',
+            features: '以精緻法式料理手法，演繹在地當季食材純粹風味，呈現視覺與味覺雙重饗宴。',
+            hours: ['午餐 11:30 - 14:00', '下午茶 14:30 - 16:30', '晚餐 18:00 - 21:30', '泉療中心 07:30 - 22:30'],
+            rules: '需事先致電訂位。若方案包含泡湯，餐飲與沐．泉療中心限同日使用完畢。',
+            url: 'https://www.kkday.com/zh-tw/product/23810',
+            image: IMG_STEAK
+          },
+          {
+            id: '3.4',
+            name: '福容大飯店台北一館｜順園日本料理',
+            type: RestaurantType.Set,
+            price: 800,
+            priceDisplay: '$800 起',
+            location: '建國南路',
+            address: '台北市大安區建國南路一段 266 號',
+            sellingPoint: '環境清幽安靜，設有寬敞明亮開放式廚房，適合專心交談或偏好寧靜氛圍的客群。',
+            features: '提供精緻的單點或套餐式日本料理，嚴選新鮮海鮮食材，呈現道地日式風味。',
+            hours: ['午餐 11:30 - 14:00', '晚餐 17:30 - 21:00'],
+            rules: '需事先致電訂位。農曆春節、母親節週末等特定日期不適用。',
+            url: 'https://www.kkday.com/zh-tw/product/115429',
+            image: IMG_JAPANESE
+          },
+          {
+            id: '3.5',
+            name: '台北萬豪酒店｜Garden Kitchen',
+            type: RestaurantType.Set,
+            price: 999,
+            priceDisplay: '$999 起',
+            location: '大直',
+            address: '台北市中山區樂群二路 199 號',
+            sellingPoint: '坐擁療癒身心河濱景緻，如同一座靜謐「都市花園」，約會或慶生的理想場地。',
+            features: '半自助式用餐，選擇一份精緻主餐，並無限享用豐盛沙拉吧與各式冷盤區。',
+            hours: ['午餐 11:30 - 14:30', '下午茶 15:00 - 17:00'],
+            rules: '需於用餐3天前事先致電訂位。午餐與下午茶方案的優惠效期不同，需特別注意。',
+            url: 'https://www.kkday.com/zh-tw/product/115103-meal-coupons-taipei-marriott-hotel-garden-kitchen',
+            image: IMG_STEAK
+          },
+          {
+            id: '3.6',
+            name: '福容大飯店台北一館｜福粵樓',
+            type: RestaurantType.Set,
+            price: 1380,
+            priceDisplay: '$1,380 起',
+            location: '建國南路',
+            address: '台北市大安區建國南路一段 266 號',
+            sellingPoint: '福容體系招牌中餐廳，穩重氣派環境，帶長輩用餐或舉辦家庭聚餐的理想選擇。',
+            features: '汲取食與藝精粹，提供精緻港式點心與傳統粵菜料理，展現磅礡氣勢中式風範。',
+            hours: ['午餐 11:30 - 14:00', '晚餐 17:30 - 21:00'],
+            rules: '需事先致電訂位。聖誕節、跨年等特定日期不適用。',
+            url: 'https://www.kkday.com/zh-tw/product/266912',
+            image: IMG_CHINESE
+          },
+          {
+            id: '3.7',
+            name: '台北艾麗酒店｜LA FARFALLA 義式餐廳',
+            type: RestaurantType.Set,
+            price: 1799,
+            priceDisplay: '$1,799 起',
+            location: '信義區',
+            address: '台北市信義區松高路 18 號',
+            sellingPoint: '位於時尚核心信義區，餐廳氛圍現代雅緻，適合追求生活品味、喜愛精緻餐飲的客群。',
+            features: '嚴選當季食材，多樣燒烤肉類主餐如「爐烤美國頂級牛肩胛肉」，搭配豐富輕食沙拉吧。',
+            hours: ['午餐 11:30 - 14:30', '下午茶 15:00 - 17:00 (週五-日)', '晚餐 18:00 - 22:00'],
+            rules: '需事先致電訂位。國定假日、特殊節日及連續假期不適用。',
+            url: 'https://www.kkday.com/zh-tw/product/119263-taipei-humble-house-ellie-hotel-la-farfalla-italian-restaurant-meal-coupon-taipei-taiwan',
+            image: IMG_STEAK
+          },
+          {
+            id: '3.8',
+            name: '台北君品酒店｜茶苑',
+            type: RestaurantType.Set,
+            price: 1899,
+            priceDisplay: '$1,899 起',
+            location: '台北車站',
+            address: '台北市大同區承德路一段 3 號',
+            sellingPoint: '濃厚「歐式古堡奢華感」，氛圍獨特浪漫，情侶約會或慶祝重要紀念日的頂級選擇。',
+            features: '結合「頂級牛排」與「海鮮」，打造奢華海陸饗宴，專注於高端食材完美呈現。',
+            hours: ['午餐 12:00 - 14:30', '晚餐 18:00 - 21:00'],
+            rules: '需事先致電訂位並告知信託號碼。特殊節日使用需補足現場價差。',
+            url: 'https://www.kkday.com/zh-tw/product/23298',
+            image: IMG_STEAK
+          }
+        ];
+
+        const getInitialData = () => {
+            const data = [...RESTAURANT_DATA];
+            for (let i = data.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [data[i], data[j]] = [data[j], data[i]];
+            }
+            return data;
+        };
+
+        // --- Component: Card ---
+        const Card = ({ data, isFront, onFlip }) => {
+          const [imageLoaded, setImageLoaded] = useState(false);
+
+          return (
+            <div className="relative w-full h-full perspective-1000">
+                <motion.div
+                    className="w-full h-full relative preserve-3d"
+                    animate={{ rotateY: isFront ? 0 : 180 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 25, duration: 0.25 }}
+                    style={{ transformStyle: 'preserve-3d' }}
+                >
+                    {/* Front Face */}
+                    <div 
+                        className="absolute inset-0 backface-hidden w-full h-full bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col cursor-pointer"
+                        onClick={onFlip}
+                        style={{ backfaceVisibility: 'hidden' }}
+                    >
+                        {/* Image Section */}
+                        <div className="h-3/4 relative bg-gray-200">
+                            {!imageLoaded && (
+                                <div className="absolute inset-0 flex items-center justify-center animate-pulse bg-gray-200 z-0">
+                                    <span className="text-gray-400 text-xs">Loading...</span>
+                                </div>
+                            )}
+                            <img 
+                                src={data.image} 
+                                alt={data.name} 
+                                className={clsx(
+                                    "w-full h-full object-cover pointer-events-none transition-opacity duration-300",
+                                    imageLoaded ? "opacity-100" : "opacity-0"
+                                )}
+                                onLoad={() => setImageLoaded(true)}
+                            />
+                            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                            
+                            {/* Badges */}
+                            <div className="absolute top-4 left-4 flex flex-wrap gap-2">
+                                <span className={clsx(
+                                    "px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm backdrop-blur-md",
+                                    data.type === RestaurantType.Buffet ? "bg-orange-600/90" : "bg-purple-600/90"
+                                )}>
+                                    {data.type === RestaurantType.Buffet ? '自助餐' : '套餐'}
+                                </span>
+                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/90 text-gray-800 shadow-sm backdrop-blur-md flex items-center">
+                                    <MapPin size={10} className="mr-1" /> {data.location}
+                                </span>
+                            </div>
+
+                            <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                                <h2 className="text-2xl font-bold leading-tight drop-shadow-md mb-1">{data.name}</h2>
+                                <div className="flex items-baseline space-x-2">
+                                     <p className="text-xl font-bold text-yellow-400 drop-shadow-md">{data.priceDisplay}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Short Features */}
+                        <div className="h-1/4 p-5 bg-white relative flex flex-col justify-center">
+                           <div className="absolute top-4 right-4 text-gray-400 animate-pulse">
+                                <RotateCw size={20} />
+                           </div>
+                           
+                           <div className="pr-8">
+                                <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed font-medium">
+                                   {data.features}
+                                </p>
+                           </div>
+                           <p className="text-xs text-center text-gray-400 mt-auto pt-2">點擊翻面查看詳細資訊</p>
+                        </div>
+                    </div>
+
+                    {/* Back Face */}
+                    <div 
+                        className="absolute inset-0 backface-hidden w-full h-full bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col cursor-pointer"
+                        onClick={onFlip}
+                        style={{ 
+                            transform: 'rotateY(180deg)', 
+                            backfaceVisibility: 'hidden' 
+                        }}
+                    >
+                        {/* Header */}
+                        <div className="bg-gray-50 p-4 border-b border-gray-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
+                            <h3 className="font-bold text-gray-800 truncate pr-2 text-sm">{data.name}</h3>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); onFlip(); }}
+                                className="p-2 bg-gray-200 rounded-full hover:bg-gray-300 transition-colors"
+                            >
+                                <RotateCw size={16} />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="overflow-y-auto flex-1 p-5 space-y-6 no-scrollbar">
+                            
+                            {/* Basic Info */}
+                            <div className="grid grid-cols-2 gap-3 mb-2">
+                                <div className="bg-orange-50 p-3 rounded-xl border border-orange-100 flex flex-col items-center justify-center text-center">
+                                    <span className="text-xs text-gray-500 mb-1">類型</span>
+                                    <span className="font-bold text-gray-800 text-sm">{data.type === RestaurantType.Buffet ? '自助餐' : '套餐'}</span>
+                                </div>
+                                <div className="bg-green-50 p-3 rounded-xl border border-green-100 flex flex-col items-center justify-center text-center">
+                                     <span className="text-xs text-gray-500 mb-1">價格</span>
+                                     <span className="font-bold text-green-700 text-sm">{data.priceDisplay}</span>
+                                </div>
+                            </div>
+
+                            <section>
+                                <h4 className="text-sm font-bold text-gray-900 mb-2 flex items-center border-l-4 border-orange-500 pl-2">
+                                    核心賣點
+                                </h4>
+                                <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg">
+                                    {data.sellingPoint}
+                                </p>
+                            </section>
+
+                            <section>
+                                <h4 className="text-sm font-bold text-gray-900 mb-2 flex items-center border-l-4 border-blue-500 pl-2">
+                                    餐點特色
+                                </h4>
+                                <p className="text-sm text-gray-600 leading-relaxed text-justify">
+                                    {data.features}
+                                </p>
+                            </section>
+
+                            <section>
+                                <h4 className="text-sm font-bold text-gray-900 mb-2 flex items-center border-l-4 border-green-500 pl-2">
+                                     營業時段
+                                </h4>
+                                <ul className="text-sm text-gray-600 space-y-1.5">
+                                    {data.hours.map((h, i) => (
+                                        <li key={i} className="flex items-start">
+                                            <Clock size={14} className="mt-1 mr-2 text-gray-400 shrink-0" />
+                                            {h}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </section>
+
+                            <section>
+                                <h4 className="text-sm font-bold text-gray-900 mb-2 flex items-center border-l-4 border-red-500 pl-2">
+                                    方案規則
+                                </h4>
+                                <div className="flex items-start">
+                                    <AlertCircle size={14} className="mt-1 mr-2 text-red-400 shrink-0" />
+                                    <p className="text-xs text-gray-500 leading-relaxed">
+                                        {data.rules}
+                                    </p>
+                                </div>
+                            </section>
+
+                            <section>
+                                <h4 className="text-sm font-bold text-gray-900 mb-2 flex items-center border-l-4 border-purple-500 pl-2">
+                                    地點資訊
+                                </h4>
+                                <p className="text-sm text-gray-600 mb-3 ml-2">{data.address}</p>
+                                <div className="flex gap-2">
+                                    <a 
+                                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.name)}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="flex-1 flex items-center justify-center py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-bold text-gray-700 transition-colors"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <Map size={14} className="mr-1.5" /> 地圖
+                                    </a>
+                                    <a 
+                                        href={`https://www.google.com/search?q=${encodeURIComponent(data.name + ' 電話')}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="flex-1 flex items-center justify-center py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-bold text-gray-700 transition-colors"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <Phone size={14} className="mr-1.5" /> 查詢電話
+                                    </a>
+                                </div>
+                            </section>
+                        </div>
+                        
+                        {/* Footer */}
+                        <div className="p-4 border-t border-gray-100 bg-white shrink-0">
+                            <a 
+                                href={data.url} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="flex items-center justify-center w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold shadow-lg active:scale-95 transition-transform"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                前往購票 / 訂位 <ExternalLink size={16} className="ml-2" />
+                            </a>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+          );
+        };
+
+        // --- Component: SwipeDeck ---
+        const SwipeDeck = ({ restaurants, onSwipe }) => {
+          const [isFlipped, setIsFlipped] = useState(false);
+          const controls = useAnimation();
+          const x = useMotionValue(0);
+          const y = useMotionValue(0);
+          const rotate = useTransform(x, [-200, 200], [-15, 15]);
+          const startTimeRef = useRef(Date.now());
+          
+          const likeOpacity = useTransform(x, [10, 100], [0, 1]);
+          const dislikeOpacity = useTransform(x, [-10, -100], [0, 1]);
+          const superLikeOpacity = useTransform(y, [-10, -100], [0, 1]);
+
+          const currentRestaurant = restaurants[0];
+
+          useEffect(() => {
+            startTimeRef.current = Date.now();
+            setIsFlipped(false);
+            x.set(0);
+            y.set(0);
+            controls.start({ x: 0, y: 0, rotate: 0, opacity: 1, scale: 1, transition: { duration: 0 } });
+          }, [currentRestaurant, controls, x, y]);
+
+          // Preload
+          useEffect(() => {
+              if (restaurants.length > 1) {
+                  const img1 = new Image();
+                  img1.src = restaurants[1].image;
+              }
+              if (restaurants.length > 2) {
+                  const img2 = new Image();
+                  img2.src = restaurants[2].image;
+              }
+          }, [restaurants]);
+
+          const handleDragEnd = async (_, info) => {
+            const offset = info.offset.x;
+            const offsetY = info.offset.y;
+            const velocity = info.velocity.x;
+            const dwellTime = Date.now() - startTimeRef.current;
+            const threshold = 100;
+
+            if (offsetY < -threshold) {
+                await controls.start({ y: -1000, opacity: 0, transition: { duration: 0.3 } });
+                onSwipe(currentRestaurant.id, InteractionStatus.SuperLike, dwellTime);
+                return;
+            }
+
+            if (offset > threshold || velocity > 500) {
+              await controls.start({ x: 800, rotate: 20, opacity: 0, transition: { duration: 0.3 } });
+              onSwipe(currentRestaurant.id, InteractionStatus.Like, dwellTime);
+            } 
+            else if (offset < -threshold || velocity < -500) {
+              await controls.start({ x: -800, rotate: -20, opacity: 0, transition: { duration: 0.3 } });
+              onSwipe(currentRestaurant.id, InteractionStatus.Dislike, dwellTime);
+            } 
+            else {
+              controls.start({ x: 0, y: 0, rotate: 0, transition: { type: "spring", stiffness: 300, damping: 20 } });
+            }
+          };
+
+          const manualSwipe = async (status) => {
+            if (!currentRestaurant) return;
+            const dwellTime = Date.now() - startTimeRef.current;
+            
+            if (status === InteractionStatus.Like) {
+                await controls.start({ x: 800, rotate: 20, opacity: 0, transition: { duration: 0.3 } });
+            } else if (status === InteractionStatus.Dislike) {
+                await controls.start({ x: -800, rotate: -20, opacity: 0, transition: { duration: 0.3 } });
+            } else if (status === InteractionStatus.SuperLike) {
+                await controls.start({ y: -1000, opacity: 0, transition: { duration: 0.3 } });
+            } else if (status === InteractionStatus.Block) {
+                await controls.start({ scale: 0, opacity: 0, transition: { duration: 0.3 } });
+            }
+
+            onSwipe(currentRestaurant.id, status, dwellTime);
+          };
+
+          if (!currentRestaurant) {
+            return (
+              <div className="flex flex-col items-center justify-center h-full text-center p-8 space-y-6 animate-fade-in">
+                <div className="w-24 h-24 bg-gradient-to-tr from-yellow-100 to-orange-100 rounded-full flex items-center justify-center text-5xl shadow-inner">🎉</div>
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">全部滑完囉！</h2>
+                    <p className="text-gray-500">快去「清單」查看您的專屬排名吧。</p>
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div className="flex flex-col h-full w-full max-w-md mx-auto relative">
+                {/* Top Spacer */}
+                <div className="h-4 flex-none" />
+
+                {/* Card Area */}
+                <div className="flex-1 w-full flex items-center justify-center px-4 relative min-h-0">
+                    {/* Background placeholders */}
+                    {restaurants.length > 1 && (
+                        <div className="absolute w-[90%] h-[90%] top-6 bg-white rounded-3xl shadow-md transform scale-95 -z-10 opacity-70"></div>
+                    )}
+                    {restaurants.length > 2 && (
+                        <div className="absolute w-[86%] h-[86%] top-9 bg-white rounded-3xl shadow-sm transform scale-90 -z-20 opacity-40"></div>
+                    )}
+
+                    {/* Draggable Card */}
+                    <motion.div 
+                        key={currentRestaurant.id} 
+                        className="w-full h-full relative z-10 touch-none cursor-grab active:cursor-grabbing max-h-[60vh] aspect-[3/4]"
+                        drag={!isFlipped}
+                        dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+                        dragElastic={0.6}
+                        onDragEnd={handleDragEnd}
+                        animate={controls}
+                        style={{ x, y, rotate }}
+                        whileTap={!isFlipped ? { scale: 1.02 } : {}}
+                    >
+                        {/* Overlays */}
+                        {!isFlipped && (
+                            <>
+                                <motion.div style={{ opacity: likeOpacity }} className="absolute top-8 left-6 z-20 border-4 border-green-500 rounded-lg px-3 py-1 bg-white/30 backdrop-blur-sm pointer-events-none -rotate-12">
+                                    <span className="text-3xl font-black text-green-600 uppercase">LIKE</span>
+                                </motion.div>
+                                <motion.div style={{ opacity: dislikeOpacity }} className="absolute top-8 right-6 z-20 border-4 border-red-500 rounded-lg px-3 py-1 bg-white/30 backdrop-blur-sm pointer-events-none rotate-12">
+                                    <span className="text-3xl font-black text-red-600 uppercase">NOPE</span>
+                                </motion.div>
+                                <motion.div style={{ opacity: superLikeOpacity }} className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20 border-4 border-blue-500 rounded-lg px-3 py-1 bg-white/30 backdrop-blur-sm pointer-events-none">
+                                    <span className="text-3xl font-black text-blue-500 uppercase">SUPER</span>
+                                </motion.div>
+                            </>
+                        )}
+
+                        <Card 
+                            data={currentRestaurant} 
+                            isFront={!isFlipped} 
+                            onFlip={() => setIsFlipped(!isFlipped)} 
+                        />
+                    </motion.div>
+                </div>
+
+                {/* Info Text */}
+                <div className="flex-none text-center py-2 opacity-50 text-xs text-gray-500">
+                    {isFlipped ? "點擊背面翻回" : "點擊卡片查看詳情"}
+                </div>
+
+                {/* Controls */}
+                <div className="flex-none flex justify-center items-center gap-6 px-6 pt-2 pb-24 z-30">
+                    <button 
+                        onClick={() => manualSwipe(InteractionStatus.Block)}
+                        className="w-12 h-12 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center hover:bg-gray-300 transition-transform active:scale-90"
+                    >
+                        <Ban size={20} />
+                    </button>
+                    
+                    <button 
+                        onClick={() => manualSwipe(InteractionStatus.Dislike)}
+                        className="w-16 h-16 rounded-full bg-white text-red-500 shadow-xl flex items-center justify-center border border-red-50 hover:bg-red-50 transition-transform active:scale-90"
+                    >
+                        <X size={32} />
+                    </button>
+
+                    <button 
+                        onClick={() => manualSwipe(InteractionStatus.Like)}
+                        className="w-16 h-16 rounded-full bg-white text-green-500 shadow-xl flex items-center justify-center border border-green-50 hover:bg-green-50 transition-transform active:scale-90"
+                    >
+                        <Heart size={32} fill="currentColor" />
+                    </button>
+
+                     <button 
+                        onClick={() => manualSwipe(InteractionStatus.SuperLike)}
+                        className="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center hover:bg-blue-100 transition-transform active:scale-90"
+                    >
+                        <Star size={20} fill="currentColor" />
+                    </button>
+                </div>
+            </div>
+          );
+        };
+
+        // --- Component: ListView ---
+        const ListView = ({ restaurants, interactions, onRemoveInteraction, onSelectRestaurant }) => {
+          const [sortedList, setSortedList] = useState([]);
+
+          useEffect(() => {
+            const list = restaurants
+                .map(r => ({ r, i: interactions.find(int => int.restaurantId === r.id) }))
+                .filter(item => item.i !== undefined);
+
+            const score = (item) => {
+                if (!item.i) return 0;
+                switch (item.i.status) {
+                    case InteractionStatus.SuperLike: return 1000 + (item.i.dwellTimeMs / 1000); 
+                    case InteractionStatus.Like: return 500 + (item.i.dwellTimeMs / 1000); 
+                    case InteractionStatus.None: return 0;
+                    case InteractionStatus.Dislike: return -500;
+                    case InteractionStatus.Block: return -1000;
+                    default: return 0;
+                }
+            };
+
+            const sorted = list.sort((a, b) => score(b) - score(a));
+            setSortedList(sorted);
+          }, [restaurants, interactions]);
+
+          const moveItem = (index, direction) => {
+            const newList = [...sortedList];
+            const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+            if (targetIndex >= 0 && targetIndex < newList.length) {
+                [newList[index], newList[targetIndex]] = [newList[targetIndex], newList[index]];
+                setSortedList(newList);
+            }
+          };
+
+          const getStatusIcon = (status) => {
+            switch (status) {
+                case InteractionStatus.SuperLike: return <Star className="text-blue-500" size={16} fill="currentColor" />;
+                case InteractionStatus.Like: return <Heart className="text-green-500" size={16} fill="currentColor" />;
+                case InteractionStatus.Dislike: return <X className="text-red-300" size={16} />;
+                case InteractionStatus.Block: return <Ban className="text-gray-400" size={16} />;
+                default: return null;
+            }
+          };
+
+          const getDistrict = (address) => {
+              const match = address.match(/(?:台北市|新北市)(.+?[區鄉鎮市])/);
+              return match ? match[1] : '大台北';
+          };
+
+          const copyToClipboard = () => {
+              const text = sortedList.map((item, index) => 
+                `${index + 1}. ${item.r.name} - ${item.i?.status === InteractionStatus.SuperLike ? '❤️ 超喜歡' : '👍 喜歡'}`
+              ).join('\n');
+              
+              navigator.clipboard.writeText(`我的餐券排名：\n${text}`);
+              alert('已複製排名！');
+          };
+
+          if (sortedList.length === 0) {
+              return (
+                  <div className="flex flex-col items-center justify-center h-full text-gray-400 p-8 text-center">
+                      <p className="mb-4">尚未評分任何餐廳</p>
+                      <p className="text-sm">去「探索」頁面滑滑看吧！</p>
+                  </div>
+              );
+          }
+
+          return (
+            <div className="flex flex-col h-full bg-gray-50 relative">
+                {/* Toolbar */}
+                <div className="flex justify-end p-2 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-10">
+                    <button 
+                        onClick={copyToClipboard}
+                        className="flex items-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition-colors"
+                    >
+                        <Share2 size={14} className="mr-1.5" /> 分享/複製排名
+                    </button>
+                </div>
+
+                {/* List */}
+                <div className="overflow-y-auto flex-1 p-4 space-y-3 pb-32">
+                    {sortedList.map((item, index) => (
+                        <div 
+                            key={item.r.id} 
+                            className={clsx(
+                                "bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex items-center transition-all cursor-pointer hover:shadow-md active:scale-[0.99]",
+                                (item.i?.status === InteractionStatus.Dislike || item.i?.status === InteractionStatus.Block) && "opacity-60 bg-gray-50"
+                            )}
+                            onClick={() => onSelectRestaurant(item.r)}
+                        >
+                            <div className="w-8 font-black text-gray-300 text-lg text-center shrink-0">
+                                {index + 1}
+                            </div>
+                            <img 
+                                src={item.r.image} 
+                                alt={item.r.name} 
+                                className={clsx(
+                                    "w-14 h-14 rounded-lg object-cover ml-2 shrink-0 bg-gray-200",
+                                    item.i?.status === InteractionStatus.Block && "grayscale"
+                                )} 
+                            />
+                            <div className="ml-3 flex-1 min-w-0">
+                                <div className="flex items-center">
+                                     <h3 className={clsx(
+                                         "font-bold text-sm truncate pr-2 text-gray-800",
+                                         item.i?.status === InteractionStatus.Block && "line-through text-gray-400"
+                                     )}>
+                                         {item.r.name}
+                                     </h3>
+                                     {getStatusIcon(item.i?.status)}
+                                </div>
+                                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                     <span className={clsx(
+                                         "text-[10px] px-1.5 py-0.5 rounded text-white font-medium",
+                                         item.r.type === RestaurantType.Buffet ? "bg-orange-500" : "bg-purple-500"
+                                     )}>
+                                         {item.r.type === RestaurantType.Buffet ? '自助餐' : '套餐'}
+                                     </span>
+                                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-medium flex items-center">
+                                         <MapPin size={8} className="mr-0.5" /> {getDistrict(item.r.address)}
+                                     </span>
+                                </div>
+                                <div className="flex items-center justify-between mt-1">
+                                     <p className="text-xs text-gray-500">{item.r.priceDisplay}</p>
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-1 ml-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex gap-1">
+                                    <button 
+                                        onClick={() => moveItem(index, 'up')}
+                                        disabled={index === 0}
+                                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30"
+                                    >
+                                        <ArrowUp size={14} />
+                                    </button>
+                                    <button 
+                                        onClick={() => moveItem(index, 'down')}
+                                        disabled={index === sortedList.length - 1}
+                                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30"
+                                    >
+                                        <ArrowDown size={14} />
+                                    </button>
+                                </div>
+                                <button 
+                                    onClick={() => onRemoveInteraction(item.r.id)}
+                                    className="flex items-center justify-center p-1.5 text-orange-400 hover:text-orange-600 hover:bg-orange-50 rounded mt-1 group"
+                                    title="重新評分"
+                                >
+                                    <RotateCcw size={14} />
+                                    <span className="text-[10px] ml-1 font-bold">重評</span>
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+          );
+        };
+
+        // --- Component: App ---
+        const View = {
+            Swipe: 'swipe',
+            List: 'list'
+        };
+
+        const App = () => {
+          const [view, setView] = useState(View.Swipe);
+          const [restaurants, setRestaurants] = useState([]);
+          const [interactions, setInteractions] = useState([]);
+          
+          const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+          const [modalIsFlipped, setModalIsFlipped] = useState(false);
+
+          useEffect(() => {
+            setRestaurants(getInitialData());
+          }, []);
+
+          const handleSwipe = (id, status, dwellTimeMs) => {
+            setInteractions(prev => {
+              const filtered = prev.filter(i => i.restaurantId !== id);
+              return [...filtered, { restaurantId: id, status, timestamp: Date.now(), dwellTimeMs }];
+            });
+          };
+
+          const handleRemoveInteraction = (id) => {
+              setInteractions(prev => prev.filter(i => i.restaurantId !== id));
+          };
+
+          const handleSelectRestaurant = (restaurant) => {
+              setSelectedRestaurant(restaurant);
+              setModalIsFlipped(false);
+          };
+
+          const handleCloseModal = () => {
+              setSelectedRestaurant(null);
+          };
+
+          const handleResetFromModal = (id) => {
+              handleRemoveInteraction(id);
+              handleCloseModal();
+          };
+
+          const unratedRestaurants = restaurants.filter(
+              r => !interactions.some(i => i.restaurantId === r.id)
+          );
+          
+          const selectedIsRated = selectedRestaurant && interactions.some(i => i.restaurantId === selectedRestaurant.id);
+
+          return (
+            <div className="fixed inset-0 w-full h-full bg-gray-50 flex flex-col font-sans text-gray-900 overflow-hidden">
+              {/* Header */}
+              <header className="flex-none bg-white shadow-sm z-30">
+                <div className="flex justify-center items-center py-3 border-b border-gray-100">
+                   <div className="bg-gradient-to-tr from-orange-500 to-pink-500 text-white p-1 rounded mr-2">
+                        <Flame size={16} fill="currentColor" />
+                   </div>
+                   <h1 className="text-lg font-extrabold tracking-tight text-gray-800">
+                     Gourmet Swipe
+                   </h1>
+                </div>
+                
+                <div className="p-2 bg-white">
+                    <div className="bg-gray-100 p-1 rounded-xl flex relative">
+                        <button 
+                            onClick={() => setView(View.Swipe)}
+                            className={clsx(
+                                "flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 relative z-10",
+                                view === View.Swipe ? "bg-white text-orange-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                            )}
+                        >
+                            <Flame size={16} className={view === View.Swipe ? "fill-orange-600" : ""} />
+                            探索
+                        </button>
+                        <button 
+                            onClick={() => setView(View.List)}
+                            className={clsx(
+                                "flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 relative z-10",
+                                view === View.List ? "bg-white text-indigo-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                            )}
+                        >
+                            <Layers size={16} className={view === View.List ? "fill-indigo-600" : ""} />
+                            清單
+                            {interactions.length > 0 && (
+                                <span className={clsx(
+                                    "ml-1 text-[10px] px-1.5 rounded-full",
+                                     view === View.List ? "bg-indigo-100 text-indigo-600" : "bg-gray-200 text-gray-500"
+                                )}>
+                                    {interactions.length}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                </div>
+              </header>
+
+              {/* Main */}
+              <main className="flex-1 relative w-full overflow-hidden">
+                {view === View.Swipe ? (
+                    <SwipeDeck restaurants={unratedRestaurants} onSwipe={handleSwipe} />
+                ) : (
+                    <ListView 
+                        restaurants={restaurants} 
+                        interactions={interactions} 
+                        onRemoveInteraction={handleRemoveInteraction}
+                        onSelectRestaurant={handleSelectRestaurant}
+                    />
+                )}
+              </main>
+
+              {/* Modal */}
+              <AnimatePresence>
+                  {selectedRestaurant && (
+                    <motion.div 
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={handleCloseModal}
+                    >
+                        <motion.div 
+                            className="w-full max-w-md h-[70vh] relative flex flex-col"
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.9, y: 20 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button 
+                                onClick={handleCloseModal}
+                                className="absolute -top-12 right-0 p-2 bg-white/20 text-white rounded-full hover:bg-white/30 backdrop-blur-md z-50"
+                            >
+                                <X size={24} />
+                            </button>
+                            
+                            <div className="flex-1 relative">
+                                <Card 
+                                    data={selectedRestaurant} 
+                                    isFront={!modalIsFlipped} 
+                                    onFlip={() => setModalIsFlipped(!modalIsFlipped)} 
+                                />
+                            </div>
+
+                            {selectedIsRated && (
+                                <div className="absolute -bottom-20 left-0 right-0 flex justify-center pb-8">
+                                    <button
+                                        onClick={() => handleResetFromModal(selectedRestaurant.id)}
+                                        className="flex items-center gap-2 px-6 py-3 bg-white text-orange-600 font-bold rounded-full shadow-lg hover:bg-orange-50 active:scale-95 transition-all"
+                                    >
+                                        <RotateCcw size={18} />
+                                        重新給分
+                                    </button>
+                                </div>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                  )}
+              </AnimatePresence>
+            </div>
+          );
+        };
+
+        // --- Render ---
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
