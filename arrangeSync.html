@@ -253,7 +253,8 @@
         <div class="info-box">
             💡 <strong>合併功能說明：</strong><br>
             • <strong>14 時</strong>：可合併 11+12+14 時的新聞<br>
-            • <strong>18 時</strong>：可合併 15+16+17+18 時的新聞
+            • <strong>18 時</strong>：可合併 15+16+17+18 時的新聞<br>
+            • <strong>⚠️ 每天第一次打開系統會自動清除昨天的資料</strong>
         </div>
 
         <!-- 工具列 -->
@@ -392,10 +393,65 @@
         let autoSaveInterval;
         let isUpdating = false;
 
+        // ✅ 取得今天的日期字串
+        function getTodayDateString() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // ✅ 檢查並清除舊資料
+        async function checkAndClearOldData() {
+            if (!currentUser || !window.firebaseDB) return;
+            
+            try {
+                const userDoc = window.firebaseDoc(window.firebaseDB, 'newsUsers', currentUser);
+                const docSnap = await window.firebaseGetDoc(userDoc);
+                
+                if (!docSnap.exists()) return;
+                
+                const userData = docSnap.data();
+                const today = getTodayDateString();
+                
+                // 檢查是否有儲存的日期
+                if (userData.lastClearDate === today) {
+                    // 今天已經清除過了
+                    console.log('✅ 今天的資料已是最新');
+                    return;
+                }
+                
+                // 清除所有時段的資料
+                console.log('🗑️ 清除昨天的資料...');
+                userData.timeSlots = {};
+                userData.lastClearDate = today;
+                
+                await window.firebaseSetDoc(userDoc, userData);
+                console.log('✅ 已清除舊資料，準備開始新的一天！');
+                
+                // 清空畫面
+                clearAllContent();
+                
+                // 顯示提示
+                alert('🌅 新的一天開始了！\n昨天的資料已自動清除。');
+                
+            } catch (error) {
+                console.error('❌ 清除舊資料失敗:', error);
+            }
+        }
+
         // 初始化
         window.addEventListener('load', async () => {
             await loadUsers();
             startAutoSave();
+            
+            // ✅ 每小時檢查一次是否需要清除
+            setInterval(async () => {
+                if (currentUser) {
+                    await checkAndClearOldData();
+                }
+            }, 60 * 60 * 1000); // 每小時檢查一次
         });
 
         // 載入用戶列表
@@ -439,7 +495,8 @@
                 const userDoc = window.firebaseDoc(window.firebaseDB, 'newsUsers', userName);
                 await window.firebaseSetDoc(userDoc, {
                     createdAt: new Date(),
-                    timeSlots: {}
+                    timeSlots: {},
+                    lastClearDate: getTodayDateString()
                 });
                 
                 alert(`✅ 用戶「${userName}」建立成功！`);
@@ -482,7 +539,7 @@
         }
 
         // 切換用戶
-        function switchUser() {
+        async function switchUser() {
             const userName = document.getElementById('userSelect').value;
             if (!userName) {
                 currentUser = '';
@@ -491,7 +548,12 @@
             }
             
             currentUser = userName;
-            loadContent();
+            
+            // ✅ 先檢查並清除舊資料
+            await checkAndClearOldData();
+            
+            // 再載入內容
+            await loadContent();
         }
 
         // 切換時段
@@ -551,6 +613,9 @@
                     content: contentData,
                     lastUpdated: new Date()
                 };
+                
+                // ✅ 記錄今天的日期
+                userData.lastClearDate = getTodayDateString();
                 
                 await window.firebaseSetDoc(userDoc, userData);
                 
@@ -656,7 +721,7 @@
             
             // 判斷要合併哪些時段
             if (currentHourNum === 14) {
-                timeSlotsToMerge = ['11', '12', '14'];  // ✅ 修正：不含 10
+                timeSlotsToMerge = ['11', '12', '14'];
                 targetHour = '14';
             } else if (currentHourNum === 18) {
                 timeSlotsToMerge = ['15', '16', '17', '18'];
@@ -705,12 +770,12 @@
                     }
                 });
                 
-                // ✅ 修正：確保每個區塊至少有兩個輸入框
+                // ✅ 確保每個區塊至少有兩個輸入框
                 mergedContent.sections.forEach(section => {
                     if (section.posts.length === 0) {
-                        section.posts = ['', ''];  // 至少兩個空白輸入框
+                        section.posts = ['', ''];
                     } else if (section.posts.length === 1) {
-                        section.posts.push('');  // 至少兩個輸入框
+                        section.posts.push('');
                     }
                 });
                 
@@ -970,7 +1035,7 @@
         function removePost(thisbutt) {
             var div = thisbutt.parentNode.parentNode.parentNode.parentNode.parentNode;
             
-            // ✅ 修正：確保至少保留一個輸入框
+            // ✅ 確保至少保留一個輸入框
             if (div.children.length <= 1) {
                 alert('⚠️ 至少要保留一個輸入框！');
                 return;
