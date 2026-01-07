@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>昌慈 & 嘉敏：回憶大考驗</title>
+    <!-- 引入外部資源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto+Sans+TC', sans-serif;
+            background-color: #f7f8fa;
+        }
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo } = React;
+
+        // --- 核心資料與常數 ---
+        const Difficulty = {
+            EASY: '簡單 (日常瑣事)',
+            MEDIUM: '中等 (活動細節)',
+            HARD: '困難 (骨灰級默契)'
+        };
+
+        const Player = {
+            CHANGCI: '秦昌慈',
+            JIAMIN: '祝嘉敏'
+        };
+
+        // 昌慈回答關於嘉敏的問題
+        const JIAMIN_QUESTIONS = [
+            { id: 1, difficulty: Difficulty.EASY, text: "嘉敏是哪一支中華職棒球隊的忠實粉絲？", options: ["中信兄弟 / 爪爪", "樂天桃猿", "統一獅", "富邦悍將"], correctAnswer: 0, hint: "她常說：『歡迎成為爪爪』。" },
+            { id: 2, difficulty: Difficulty.EASY, text: "嘉敏目前的學業身分除了研究生外，還擔任哪位老師的助教？", options: ["黃俊銘 / 阿銘老師", "陳昌德老師", "林宇凡老師", "張逸聖老師"], correctAnswer: 0, hint: "meeting 惡夢的來源。" },
+            { id: 3, difficulty: Difficulty.EASY, text: "嘉敏曾經學過幾個月的什麼樂器，剛好跟昌慈一樣？", options: ["吉他", "爵士鼓", "貝斯", "鋼琴"], correctAnswer: 1, hint: "兩人都對節奏樂器有過交集。" },
+            { id: 4, difficulty: Difficulty.EASY, text: "嘉敏通常在哪一個校區出沒，且經常抱怨那裡又冷又濕？", options: ["政大 / 山上傳院", "政大山下校區", "台大校區", "公館校區"], correctAnswer: 0, hint: "濕冷的研究生生活。" },
+            { id: 5, difficulty: Difficulty.EASY, text: "嘉敏在聊天記錄中提到的電子信箱開頭是什麼？", options: ["jmin8810", "glmy8810", "glmy1010", "jiamin8810"], correctAnswer: 1, hint: "g、l、m、y 四個字母開頭。" },
+            { id: 6, difficulty: Difficulty.EASY, text: "嘉敏被阿銘老師要求，在演講活動中要拉到幾個人的「業績」？", options: ["3人", "5人", "10人", "15人"], correctAnswer: 1, hint: "這是一個讓她很頭痛的業績量。" },
+            { id: 7, difficulty: Difficulty.EASY, text: "嘉敏在 2025 年 11 月去了哪一個國家旅遊？", options: ["日本", "韓國", "泰國", "新加坡"], correctAnswer: 1, hint: "在那邊大吃烤肉和炸雞。" },
+            { id: 8, difficulty: Difficulty.EASY, text: "嘉敏心目中的「國民游擊手」或「阿嬤團寵」是哪位球員？", options: ["王威晨", "江坤宇 / 阿坤", "陳傑憲", "林立"], correctAnswer: 1, hint: "爪爪的小可愛。" },
+            { id: 9, difficulty: Difficulty.EASY, text: "嘉敏週末通常會回到哪一個地方？", options: ["台北", "中壢", "新竹", "台中"], correctAnswer: 1, hint: "回桃園家的溫暖。" },
+            { id: 10, difficulty: Difficulty.EASY, text: "嘉敏在趕報告或期末時，最常使用的設計工具是什麼？", options: ["Photoshop", "Canva", "Figma", "Illustrator"], correctAnswer: 1, hint: "老天不放過她的那個線上軟體。" },
+            { id: 11, difficulty: Difficulty.MEDIUM, text: "嘉敏在 2025 年 9 月時，眼睛腫起來不舒服，她當時懷疑是什麼問題？", options: ["過敏", "結膜炎", "針眼", "隱形眼鏡受傷"], correctAnswer: 2, hint: "當時讓她非常焦慮。" },
+            { id: 12, difficulty: Difficulty.MEDIUM, text: "嘉敏在 2025 年 11 月回台時，因為桃園放假而北北基沒放，她開玩笑說誰被踢出群組？", options: ["侯友宜", "蔣萬安", "張善政", "謝國樑"], correctAnswer: 2, hint: "因為他沒跟上大家放假的節奏。" },
+            { id: 13, difficulty: Difficulty.MEDIUM, text: "嘉敏曾在 2025 年 10 月幫昌慈在羅斯福路開箱哪一種特殊的飲品？", options: ["南瓜拿鐵", "地瓜奶昔", "芋頭鮮奶", "巧克力聖代"], correctAnswer: 1, hint: "奶昔狂人的收藏品開箱。" },
+            { id: 14, difficulty: Difficulty.MEDIUM, text: "嘉敏的論文研究方向主要是關於什麼活動的社會表演？", options: ["棒球比賽", "音樂節", "選舉造勢", "傳統祭典"], correctAnswer: 1, hint: "跟現場演出情緒有關。" },
+            { id: 15, difficulty: Difficulty.MEDIUM, text: "嘉敏曾在政大哪一棟大樓感受到地震很大，讓她覺得很不適？", options: ["大勇樓 / 台文系系辦", "傳院大樓", "綜合大樓", "行政大樓"], correctAnswer: 0, hint: "在那棟老房子裡特別有感。" },
+            { id: 16, difficulty: Difficulty.MEDIUM, text: "嘉敏曾經因為什麼原因，覺得自己「靈魂被抽乾」、「老了」？", options: ["連續熬夜三天", "參加親戚家的烤肉 / 無效社交", "看球連看12局", " meeting 5小時"], correctAnswer: 1, hint: "社交疲勞的真實寫照。" },
+            { id: 17, difficulty: Difficulty.MEDIUM, text: "嘉敏在 2025 年 5 月時，曾提到哪一個時間點之後她才會有空進行討論？", options: ["晚上 21:00", "晚上 22:00", "晚上 23:00", "凌晨 00:00"], correctAnswer: 2, hint: "研究生的深夜時段。" },
+            { id: 18, difficulty: Difficulty.MEDIUM, text: "嘉敏在導讀時曾遇到什麼悲劇，導致她只剩下 40 分鐘可以講？", options: ["電腦壞掉", "老師前面講了快 2 小時", "同學瘋狂提問", "停電"], correctAnswer: 1, hint: "阿銘老師的魅力無窮。" },
+            { id: 19, difficulty: Difficulty.MEDIUM, text: "嘉敏曾在 2025 年 4 月時，為了訪談聯繫了哪一位「資深」的人士？", options: ["麗雯介紹的鼓手 / 受訪者", "資深球評", "前傳院院長", "阿銘的博班學長"], correctAnswer: 0, hint: "跟樂器有關的訪談聯繫。" },
+            { id: 20, difficulty: Difficulty.MEDIUM, text: "嘉敏在 2025 年 3 月時，跟昌慈通話討論簡報的時間大約是多長？", options: ["45 分鐘", "1 小時", "1 小時 29 分鐘", "2 小時"], correctAnswer: 2, hint: "那是一次非常深入的交流。" },
+            { id: 21, difficulty: Difficulty.HARD, text: "嘉敏曾在 2025 年 7 月提到，哪兩位同學幫忙主持了嘻哈演講？", options: ["曼婷和宇凡", "曉墨和曼婷", "宇凡和曉墨", "曼婷和嘉敏"], correctAnswer: 0, hint: "當時主持的兩位戰友。" },
+            { id: 22, difficulty: Difficulty.HARD, text: "嘉敏曾提到一個讓昌慈好奇評價的「液態男」同學，他的全名是？", options: ["陳浩瑞", "陳浩南", "林浩瑞", "王浩然"], correctAnswer: 0, hint: "這是一個很有趣的綽號與人選。" },
+            { id: 23, difficulty: Difficulty.HARD, text: "嘉敏在 2025 年 9 月分享過一張「傳院貓貓」躲在什麼地方的照片/影片？", options: ["垃圾桶旁", "樹洞裡", "車子下面", "長椅下"], correctAnswer: 2, hint: "傳院貓貓的藏身處。" },
+            { id: 24, difficulty: Difficulty.HARD, text: "嘉敏曾提到她想去音樂節看哪位歌手的表演，但當時主辦還沒公佈日期？", options: ["蔡依林", "田馥甄", "安溥", "張惠妹"], correctAnswer: 1, hint: "她是這位歌手的忠實粉絲。" },
+            { id: 25, difficulty: Difficulty.HARD, text: "嘉敏對於兄弟象主場女廁的評價是像什麼測試？", options: ["忍耐測試", "清潔測試", "膽量測試 (因為很暗)", "運氣測試"], correctAnswer: 2, hint: "對於洲際女廁的經典評價。" },
+            { id: 26, difficulty: Difficulty.HARD, text: "嘉敏在 2025 年 4 月轉帳給昌慈的晚餐錢精確金額是多少？", options: ["450 元", "484 元", "520 元", "400 元"], correctAnswer: 1, hint: "不只是整數，還有尾數。" },
+            { id: 27, difficulty: Difficulty.HARD, text: "嘉敏曾做過一個惡夢，夢到自己在哪種團隊中一直耍雷？", options: ["黃俊銘的研究團隊", "紀律嚴謹的國外工作團隊", "中信兄弟應援團", "昌慈的辦公室"], correctAnswer: 1, hint: "壓力的展現。" },
+            { id: 28, difficulty: Difficulty.HARD, text: "嘉敏在 2025 年 6 月時，幫昌慈代班拍照和簽收據的講者是誰？", options: ["黃俊銘", "張逸聖 / 迪拉", "熱狗", "熊仔"], correctAnswer: 1, hint: "嘻哈圈的重量級人物。" },
+            { id: 29, difficulty: Difficulty.HARD, text: "嘉敏曾笑說哪一個軟體在 2025 年 10 月修好了是「壞消息」，因為老天不放過她？", options: ["Microsoft Word", "Canva", "SPSS", "PowerPoint"], correctAnswer: 1, hint: "因為修好了就不能藉機偷懶了。" },
+            { id: 30, difficulty: Difficulty.HARD, text: "嘉敏曾在 2025 年 8 月分享過，哪一位「老藍男」跟動物視訊讓她覺得很誇張？", options: ["馬英九", "朱立倫 / 老藍男", "趙少康", "韓國瑜"], correctAnswer: 1, hint: "跟獅子、長頸鹿視訊的那位。" }
+        ];
+
+        // 嘉敏回答關於昌慈的問題
+        const CHANGCI_QUESTIONS = [
+            { id: 31, difficulty: Difficulty.EASY, text: "昌慈的星座是什麼？", options: ["牡羊座", "獅子座", "射手座", "天秤座"], correctAnswer: 0, hint: "4 月初生日的熱血男人。" },
+            { id: 32, difficulty: Difficulty.EASY, text: "昌慈目前在哪一個政府部門服務？", options: ["台北市政府", "新北市政府", "桃園市政府", "行政院"], correctAnswer: 1, hint: "他在猴猴底下做事。" },
+            { id: 33, difficulty: Difficulty.EASY, text: "昌慈在工作中最常需要面對並被他稱為「猴猴」的長官是誰？", options: ["侯友宜", "蔣萬安", "朱立倫", "謝國樑"], correctAnswer: 0, hint: "這位長官的綽號很有名。" },
+            { id: 34, difficulty: Difficulty.EASY, text: "昌慈最崇拜、甚至會在上班時偷看他比賽的日本球星是誰？", options: ["達比修有", "大谷翔平", "鈴木一朗", "村上宗隆"], correctAnswer: 1, hint: "現代棒球的神。" },
+            { id: 35, difficulty: Difficulty.EASY, text: "昌慈去教室前最喜歡點「龍角」的哪一種飲料？", options: ["珍珠奶茶", "蜂蜜奶茶微冰", "凍檸茶", "美式咖啡"], correctAnswer: 1, hint: "這是他的固定標配。" },
+            { id: 36, difficulty: Difficulty.EASY, text: "昌慈曾在球賽訪談準備中提到，他以前打過哪兩種打擊樂器？", options: ["爵士鼓與木箱鼓", "爵士鼓與鋼琴", "木箱鼓與吉他", "大鼓與小鼓"], correctAnswer: 0, hint: "他對節奏感很有自信。" },
+            { id: 37, difficulty: Difficulty.EASY, text: "昌慈的家鄉在哪裡，且曾抱怨坐火車回去很生氣？", options: ["高雄", "台南", "屏東", "彰化"], correctAnswer: 1, hint: "府城的孩子。" },
+            { id: 38, difficulty: Difficulty.EASY, text: "昌慈非常推薦的一個 AI 整理工具，甚至說可以創造影片的是什麼？", options: ["ChatGPT", "NotebookLM", "Claude", "Monica"], correctAnswer: 1, hint: "筆記整理神器。" },
+            { id: 39, difficulty: Difficulty.EASY, text: "昌慈在 2025 年 10 月曾開玩笑說，要把嘉敏帶到哪裡賣掉？", options: ["深山裡", "北海岸的山上", "大巨蛋外野", "汐止老家"], correctAnswer: 1, hint: "這是一種獨特的昌慈式幽默。" },
+            { id: 40, difficulty: Difficulty.EASY, text: "昌慈在工作電腦中被資訊人員要求移除哪一個他認為好用的 AI 軟體？", options: ["Monica", "Sider", "Copilot", "Jasper"], correctAnswer: 0, hint: "讓他覺得很不方便的一件事。" },
+            { id: 41, difficulty: Difficulty.MEDIUM, text: "昌慈在 2025 年 9 月搬新家，請問新家位在哪一個區？", options: ["板橋", "新店", "汐止", "中和"], correctAnswer: 2, hint: "離南港比較近的地方。" },
+            { id: 42, difficulty: Difficulty.MEDIUM, text: "昌慈曾因為哪一種酒「熟成三年」變甜而感到驚艷？", options: ["威士忌", "梅酒", "清酒", "伏特加"], correctAnswer: 1, hint: "當時在聚會中提到的話題。" },
+            { id: 43, difficulty: Difficulty.MEDIUM, text: "昌慈曾在論文投稿中被評審指出哪一個專業領域的低級錯誤？", options: ["棒球規則", "NBA 紀錄", "新聞倫理", "統計方法"], correctAnswer: 1, hint: "這讓他覺得很尷尬。" },
+            { id: 44, difficulty: Difficulty.MEDIUM, text: "昌慈在 2025 年 8 月時，因為哪位長官沒有跑市政行程而意外獲得週六日休假？", options: ["侯友宜", "謝國樑 / 市長", "蔣萬安", "朱立倫"], correctAnswer: 1, hint: "基隆市長的動向。" },
+            { id: 45, difficulty: Difficulty.MEDIUM, text: "昌慈在 2025 年跨年夜當晚，在哪裡冒雨進行第一線報導？", options: ["台北 101", "淡水 / 淡江大橋煙火", "新北市民廣場", "碧潭"], correctAnswer: 1, hint: "那是一個又冷又雨的跨年。" },
+            { id: 46, difficulty: Difficulty.MEDIUM, text: "昌慈在 2025 年 9 月帶嘉敏去裕隆城吃飯時，原本在猶豫哪三家餐廳？", options: ["千壽司、裕隆城、居米", "馬辣、石二鍋、千壽司", "壽司郎、藏壽司、千壽司", "居米、裕隆城、馬辣"], correctAnswer: 0, hint: "那次吃飯的選擇過程。" },
+            { id: 47, difficulty: Difficulty.MEDIUM, text: "昌慈曾提到他在家附近的「密室」偷看大谷翔平，那個密室其實是什麼地方？", options: ["儲藏室", "機房", "地下室", "閣樓"], correctAnswer: 1, hint: "在那裡看球很有氛圍。" },
+            { id: 48, difficulty: Difficulty.MEDIUM, text: "昌慈在 2025 年 10 月時，為了研討會想去買什麼樣的衣服？", options: ["全套西裝", "半正式襯衫或罩衫", "運動衫", "休閒 T-shirt"], correctAnswer: 1, hint: "想要穿得稍微正式一點。" },
+            { id: 49, difficulty: Difficulty.MEDIUM, text: "昌慈對於哪一種球場食物感到抗議，因為「外野竟然沒有」？", options: ["熱狗堡", "哈根達斯 / 冰淇淋", "爆米花", "雞排"], correctAnswer: 1, hint: "外野觀眾的遺憾。" },
+            { id: 50, difficulty: Difficulty.MEDIUM, text: "昌慈曾轉寄球票給嘉敏，請問他當時是轉寄到嘉敏的哪個電子信箱？", options: ["glmy8810@gmail.com", "jmin8810@gmail.com", "glmy1010@gmail.com", "jiamin8810@gmail.com"], correctAnswer: 0, hint: "就是那個最常用的電子信箱。" },
+            { id: 51, difficulty: Difficulty.HARD, text: "昌慈提供的台銀匯款帳號，最後三碼數字是多少？", options: ["123", "459", "789", "001"], correctAnswer: 1, hint: "這題需要極強的記憶力。" },
+            { id: 52, difficulty: Difficulty.HARD, text: "昌慈曾提到他家裡有一隻長得很有「智慧」神韻的寵物，牠的名字是？", options: ["壯壯", "壯寶", "阿寶", "神之寶"], correctAnswer: 1, hint: "很有神韻的名字。" },
+            { id: 53, difficulty: Difficulty.HARD, text: "昌慈在 2025 年 11 月時，跑去政大參加了哪一位政治人物的演講？", options: ["柯文哲", "黃國昌", "王婉諭", "苗博雅"], correctAnswer: 1, hint: "當時在對話中提到的行程。" },
+            { id: 54, difficulty: Difficulty.HARD, text: "昌慈曾開玩笑說，要把「BBQ」的名字改成什麼？", options: ["烤肉 Q", "兔兔 Q", "香香 Q", "好吃 Q"], correctAnswer: 1, hint: "這是一個很可愛的改名。" },
+            { id: 55, difficulty: Difficulty.HARD, text: "昌慈在 2025 年 4 月球賽當天，預計到達「環球」的時間是幾點？", options: ["14:00", "15:00 / 三點", "16:00", "17:00"], correctAnswer: 1, hint: "約定的時間點。" },
+            { id: 56, difficulty: Difficulty.HARD, text: "昌慈在 2025 年 7 月時，曾把誰的名字記錯成嘻哈演講的主持人？", options: ["曉墨", "嘉敏", "曼婷", "宇凡"], correctAnswer: 0, hint: "他當時腦袋打結記錯了人。" },
+            { id: 57, difficulty: Difficulty.HARD, text: "昌慈在 2025 年 9 月的一次 Dodgers 比賽中，看到幾比幾就關掉沒看，結果後來贏了？", options: ["3:0", "4:3", "5:2", "1:0"], correctAnswer: 1, hint: "那場比賽充滿戲劇性。" },
+            { id: 58, difficulty: Difficulty.HARD, text: "昌慈曾提到哪一個 AI 軟體被另一個 AI 軟體（Gemini）嗆是「睜眼說瞎話」？", options: ["ChatGPT", "Monica", "Claude", "Perplexity"], correctAnswer: 1, hint: "AI 之間的戰爭。" },
+            { id: 59, difficulty: Difficulty.HARD, text: "昌慈在 2025 年 8 月分享過，他在新北招待記者節餐敘時送了什麼巧克力？", options: ["金莎", "七夕巧克力", "Godiva", "松露巧克力"], correctAnswer: 1, hint: "招待記者節餐敘的小禮物。" },
+            { id: 60, difficulty: Difficulty.HARD, text: "昌慈在 2025 年 3 月討論簡報時，分享了一個關於「昌德」老師可以列入教材的影片連結，那個影片是關於什麼？", options: ["新聞報導", "電競 / 異化", "體育賽事", "政治行銷"], correctAnswer: 1, hint: "與虛擬異化有關。" }
+        ];
+
+        // --- 主元件 ---
+        const App = () => {
+            const [gameState, setGameState] = useState({
+                currentPlayer: null,
+                currentLevel: null,
+                score: 0,
+                currentQuestionIndex: 0,
+                isFinished: false
+            });
+
+            const [activeQuestions, setActiveQuestions] = useState([]);
+
+            const shuffle = (array) => [...array].sort(() => Math.random() - 0.5);
+
+            const handleSelectPlayer = (player) => {
+                setGameState(prev => ({ ...prev, currentPlayer: player }));
+            };
+
+            const handleSelectLevel = (level) => {
+                const pool = gameState.currentPlayer === Player.CHANGCI ? JIAMIN_QUESTIONS : CHANGCI_QUESTIONS;
+                const filtered = pool.filter(q => q.difficulty === level);
+                const selected = shuffle(filtered).slice(0, 10);
+                setActiveQuestions(selected);
+                setGameState(prev => ({ 
+                    ...prev, 
+                    currentLevel: level, 
+                    currentQuestionIndex: 0, 
+                    score: 0, 
+                    isFinished: false 
+                }));
+            };
+
+            const handleAnswer = (optionIndex) => {
+                const currentQ = activeQuestions[gameState.currentQuestionIndex];
+                const isCorrect = optionIndex === currentQ.correctAnswer;
+                const newScore = isCorrect ? gameState.score + 1 : gameState.score;
+                const nextIndex = gameState.currentQuestionIndex + 1;
+
+                if (nextIndex >= activeQuestions.length) {
+                    setGameState(prev => ({ ...prev, score: newScore, isFinished: true }));
+                } else {
+                    setGameState(prev => ({ ...prev, score: newScore, currentQuestionIndex: nextIndex }));
+                }
+            };
+
+            const resetGame = () => setGameState({ currentPlayer: null, currentLevel: null, score: 0, currentQuestionIndex: 0, isFinished: false });
+
+            // 初始畫面
+            if (!gameState.currentPlayer) {
+                return (
+                    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+                        <div className="max-w-md w-full bg-white rounded-[3rem] shadow-2xl p-10 text-center border-t-[12px] border-indigo-600">
+                            <div className="mb-6 flex justify-center">
+                                <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 text-3xl animate-bounce">
+                                    <i className="fa-solid fa-star"></i>
+                                </div>
+                            </div>
+                            <h1 className="text-3xl font-black text-gray-800 mb-2">專屬記憶大考驗</h1>
+                            <p className="text-gray-400 mb-12 text-xs font-bold tracking-widest uppercase">Chang-Ci & Jia-Min MEMORIES</p>
+                            <div className="space-y-4">
+                                <button onClick={() => handleSelectPlayer(Player.CHANGCI)} className="w-full py-5 bg-white border-2 border-gray-100 text-gray-700 rounded-2xl text-xl font-black hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm">我是秦昌慈 🐒</button>
+                                <button onClick={() => handleSelectPlayer(Player.JIAMIN)} className="w-full py-5 bg-white border-2 border-gray-100 text-gray-700 rounded-2xl text-xl font-black hover:border-indigo-600 hover:text-indigo-600 transition-all shadow-sm">我是祝嘉敏 🎓</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 難度選擇
+            if (!gameState.currentLevel) {
+                return (
+                    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+                        <div className="max-w-md w-full">
+                            <button onClick={resetGame} className="text-gray-400 hover:text-gray-600 mb-6 flex items-center gap-2 font-black">
+                                <i className="fa-solid fa-arrow-left"></i> 返回身分選擇
+                            </button>
+                            <div className="bg-white rounded-[2.5rem] shadow-xl p-10 border-l-[10px] border-indigo-600">
+                                <h2 className="text-2xl font-black text-gray-800 mb-8">選擇回憶深度</h2>
+                                <div className="space-y-4">
+                                    {Object.values(Difficulty).map(level => (
+                                        <button key={level} onClick={() => handleSelectLevel(level)} className={`w-full py-5 rounded-2xl text-left px-8 text-lg font-black text-white shadow-lg transition-all active:scale-95 ${
+                                            level.includes('簡單') ? 'bg-green-500 hover:bg-green-600' : 
+                                            level.includes('中等') ? 'bg-orange-500 hover:bg-orange-600' : 'bg-rose-600 hover:bg-rose-700'
+                                        }`}>{level}</button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 結算畫面
+            if (gameState.isFinished) {
+                const percentage = (gameState.score / activeQuestions.length) * 100;
+                let message = "";
+                if (percentage === 100) message = "看來我們之間，真的很有默契呢... 對吧？";
+                else if (percentage >= 70) message = "被你了解這麼多細節，感覺心跳快了一點點... 謝謝你一直記得。";
+                else if (percentage >= 40) message = "原來你還記得這些啊？以後我得更小心，不能讓你抓到我的小把柄了。";
+                else message = "看來我們的記憶體需要更新一下了，找時間見個面吧？";
+
+                return (
+                    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+                        <div className="max-w-md w-full text-center">
+                            <div className="text-6xl mb-6">🎉</div>
+                            <h2 className="text-2xl font-black text-gray-800 mb-2">測驗完成</h2>
+                            <div className="text-7xl font-black text-indigo-600 mb-4">{gameState.score} <span className="text-xl text-gray-300">/ 10</span></div>
+                            <p className="text-xl font-bold text-gray-600 mb-10 px-4 leading-relaxed italic">「{message}」</p>
+                            <div className="flex flex-col gap-4">
+                                <button onClick={() => handleSelectLevel(gameState.currentLevel)} className="py-4 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl">再玩一次</button>
+                                <button onClick={resetGame} className="py-4 bg-gray-100 text-gray-500 rounded-2xl font-black text-lg">更換玩家</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 答題中
+            const currentQ = activeQuestions[gameState.currentQuestionIndex];
+
+            return (
+                <div className="min-h-screen flex flex-col items-center p-4 pb-24">
+                    <div className="w-full max-w-lg flex justify-between items-end py-6 px-2">
+                        <div>
+                            <h4 className="text-[10px] font-black text-indigo-500 tracking-widest uppercase">Memory Hunt</h4>
+                            <p className="text-lg font-black text-gray-800">{gameState.currentPlayer} 答題中</p>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-xl font-black text-indigo-600">{gameState.currentQuestionIndex + 1}</span>
+                            <span className="text-gray-300 font-black mx-1">/</span>
+                            <span className="text-sm font-black text-gray-400">10</span>
+                        </div>
+                    </div>
+
+                    <div className="w-full max-w-lg bg-white rounded-[2rem] shadow-xl p-8 mb-6 border border-gray-100">
+                        <div className="mb-4 text-xs font-black text-indigo-400">{gameState.currentLevel}</div>
+                        <h3 className="text-xl font-black text-gray-800 mb-8 leading-relaxed">{currentQ?.text}</h3>
+                        <div className="space-y-3">
+                            {currentQ?.options.map((opt, i) => (
+                                <button key={i} onClick={() => handleAnswer(i)} className="w-full p-5 text-left bg-gray-50 hover:bg-indigo-50 rounded-xl font-bold text-gray-700 transition-colors border-2 border-transparent hover:border-indigo-100 flex items-center gap-4 group">
+                                    <div className="w-6 h-6 rounded bg-white border border-gray-200 flex items-center justify-center text-[10px] text-gray-400 group-hover:text-indigo-600 group-hover:border-indigo-600">{String.fromCharCode(65+i)}</div>
+                                    <span>{opt}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="w-full max-w-lg">
+                        <details className="group">
+                            <summary className="cursor-pointer text-center py-2 text-xs font-black text-gray-400 hover:text-indigo-500 transition-colors">
+                                <i className="fa-solid fa-lightbulb mr-2"></i> 顯示秘密提示
+                            </summary>
+                            <div className="mt-4 p-4 bg-indigo-600 rounded-2xl text-white text-sm italic font-medium leading-relaxed shadow-lg">「{currentQ?.hint}」</div>
+                        </details>
+                    </div>
+
+                    <div className="fixed bottom-6 left-0 w-full flex justify-center px-4">
+                        <div className="bg-white/80 backdrop-blur-md px-6 py-3 rounded-full shadow-2xl border border-white flex items-center gap-4">
+                            <div className="flex -space-x-2">
+                                <div className="w-8 h-8 rounded-full bg-indigo-500 border-2 border-white flex items-center justify-center font-black text-white text-[10px]">昌</div>
+                                <div className="w-8 h-8 rounded-full bg-rose-400 border-2 border-white flex items-center justify-center font-black text-white text-[10px]">敏</div>
+                            </div>
+                            <div className="h-4 w-px bg-gray-200"></div>
+                            <span className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Memory Collection 5.0</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
